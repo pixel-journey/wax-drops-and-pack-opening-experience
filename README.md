@@ -92,12 +92,24 @@ After studying this repository, you should be able to:
   CollectionUpdate.tsx
 ```
 
-### Key Design Decisions
+### Key Design Decisions & Rationale
 
-- **Client-side first**: Pre-compute possible outcomes where possible for instant feedback.
-- **Optimistic UI**: Update collection state immediately, then confirm on-chain.
-- **Clear signing previews**: Every on-chain action shows exactly what the user is signing.
-- **Accessibility**: Support reduced motion and provide text alternatives for reveals.
+| Decision                    | Rationale                                                                 | Trade-offs                              |
+|-----------------------------|---------------------------------------------------------------------------|-----------------------------------------|
+| Client-side first           | Enables instant feedback and better perceived performance                 | Requires careful handling of on-chain confirmation |
+| Optimistic UI updates       | Improves perceived speed and user experience                              | Must be able to rollback safely         |
+| Clear signing previews      | Critical for user trust and safety on sensitive actions                   | Slightly more complex UI                |
+| Accessibility by default    | Reduces motion support, screen reader support                             | Requires extra implementation effort    |
+| Component-based architecture| Easier to reuse, test, and maintain across projects                       | Slightly higher initial abstraction     |
+
+### Data Flow Overview
+
+1. User initiates opening
+2. Client calculates possible outcomes (if possible)
+3. Animation plays
+4. Result is displayed + collection is updated optimistically
+5. On-chain claim is triggered with preview
+6. Final state is confirmed from chain
 
 ---
 
@@ -119,11 +131,11 @@ Implement optimistic collection updates and proper error handling.
 
 ### Integration Levels
 
-| Level       | Description                                                                 | When to Use                          |
-|-------------|-----------------------------------------------------------------------------|--------------------------------------|
-| **Minimal**     | Basic reveal animation + static probability list + simple claim button         | Prototypes, learning, MVPs           |
-| **Recommended** | Full guided claiming, optimistic updates, good animations, clear probability breakdown | Most production applications         |
-| **Advanced**    | Interactive probability explorer, simulation mode, advanced animations         | High-engagement games or collector tools |
+| Level           | Description                                                                 | When to Use                              |
+|-----------------|-----------------------------------------------------------------------------|------------------------------------------|
+| **Minimal**         | Basic reveal animation + static probability list + simple claim button         | Prototypes, learning, MVPs               |
+| **Recommended**     | Full guided claiming, optimistic updates, good animations, clear probability breakdown | Most production applications             |
+| **Advanced**        | Interactive probability explorer, simulation mode, advanced animations         | High-engagement games or collector tools |
 
 See `spec.yaml` for machine-readable definitions of these levels.
 
@@ -151,6 +163,13 @@ See `spec.yaml` for machine-readable definitions of these levels.
 - Handle errors gracefully with helpful messages
 - Use optimistic updates only when you can safely rollback
 - Communicate clearly when something goes wrong
+
+### Multiple Options
+
+You can choose different levels of complexity depending on your needs:
+- Simple static probability list (fast to implement)
+- Rich visual probability breakdown (recommended for most cases)
+- Full interactive explorer + simulation (for advanced tools)
 
 ---
 
