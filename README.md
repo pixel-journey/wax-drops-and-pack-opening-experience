@@ -4,9 +4,9 @@
 > **Category:** Atomic Ecosystem – Drops & Pack Openings  
 > **Parent Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)
 
-**Goal:** Provide a high-quality, educational, and practical reference implementation for building delightful, transparent, and fair drop and pack opening experiences on WAX.
+**Goal:** Provide a high-quality, educational, and practical reference example for building delightful, transparent, and fair drop and pack opening experiences on WAX.
 
-This repository serves as both a learning resource for developers and a reusable pattern that can be adapted into other projects.
+This repository is designed to be useful for both human developers and AI-assisted development.
 
 ---
 
@@ -29,14 +29,14 @@ We build this for long-term participants in the WAX ecosystem — both end users
 
 **For Human Developers**
 1. Read the Educational Core and Architecture sections.
-2. Explore the Demo Examples.
-3. Use the Integration Guide to adapt patterns into your project.
-4. Review Best Practices for production use.
+2. Review the Integration Guide.
+3. Explore the Code Examples and Best Practices.
+4. Use the patterns in your own project.
 
 **For AI Agents & AI-Assisted Development**
-- Refer to the `spec.yaml` for machine instructions.
-- Use the structured sections (Concepts, Architecture, Integration Guide) as high-quality context.
-- Follow patterns from the Code Examples when generating implementations.
+- Start with the `spec.yaml` for structured machine instructions.
+- Use the Architecture and Integration Guide sections as high-quality context.
+- Follow the patterns shown in the examples when generating code.
 
 ---
 
@@ -101,106 +101,94 @@ After studying this repository, you should be able to:
 
 ---
 
-## 3. Demo & Code Examples
+## 3. Integration Guide
 
-This repository includes both simple and more complete examples.
+### How to Integrate This Pattern
 
-**Simple Version**
-- Basic reveal animation
-- Static probability list
-- Simple claiming button
+**Step 1: Basic Reveal**
+Start by implementing the `RevealAnimation` component with your drop/pack data.
 
-**More Complete Version**
-- Rich animations with rarity-based feedback
-- Interactive probability visualization
-- Real-time collection updates
-- Full guided claiming flow with safety previews
+**Step 2: Add Probability Display**
+Use the `ProbabilityBreakdown` pattern to show clear odds to the user.
 
-> See the `/examples` folder for runnable code snippets.
+**Step 3: Connect On-Chain Claiming**
+Integrate the `ClaimPanel` using WharfKit. Always show transaction previews.
 
----
-
-## 4. Integration Guide
-
-### How to Use This Pattern in Your Project
-
-1. Copy the relevant components from `/components`
-2. Adapt the probability calculation logic to your drop/pack data
-3. Connect the claiming flow to your WharfKit session
-4. Style components using the Pixel Journey Design System
-5. Add your own reveal animations while following the principles in this repo
+**Step 4: Add Feedback & Polish**
+Implement optimistic collection updates and proper error handling.
 
 ### Integration Levels
 
-- **Level 1 (Minimal)**: Use only the RevealAnimation and basic probability display
-- **Level 2 (Recommended)**: Add full guided claiming + optimistic updates
-- **Level 3 (Advanced)**: Include interactive probability explorer and simulation mode
+| Level       | Description                                                                 | When to Use                          |
+|-------------|-----------------------------------------------------------------------------|--------------------------------------|
+| **Minimal**     | Basic reveal animation + static probability list + simple claim button         | Prototypes, learning, MVPs           |
+| **Recommended** | Full guided claiming, optimistic updates, good animations, clear probability breakdown | Most production applications         |
+| **Advanced**    | Interactive probability explorer, simulation mode, advanced animations         | High-engagement games or collector tools |
+
+See `spec.yaml` for machine-readable definitions of these levels.
 
 ---
 
-## 5. Best Practices & Options
+## 4. Best Practices & Options
 
 ### Probability Visualization
 
-- Always combine visual and textual representations
+- Always combine **visual** and **textual** representations
 - Consider showing expected value when relevant
-- Avoid information overload — progressive disclosure works well
+- Use progressive disclosure to avoid overwhelming users
+- Test with real users — clarity builds trust
 
 ### Animation Principles
 
 - Build anticipation before the reveal
-- Use motion to communicate rarity
+- Use motion and scale to communicate rarity
 - Respect `prefers-reduced-motion`
-- Prioritize performance on average devices
+- Prioritize performance (use transform and opacity)
 
 ### On-Chain Safety
 
-- Always show clear transaction previews
+- Always show clear transaction previews using WharfKit
 - Handle errors gracefully with helpful messages
-- Use optimistic updates only when safe to rollback
+- Use optimistic updates only when you can safely rollback
+- Communicate clearly when something goes wrong
+
+---
+
+## 5. Demo & Code Examples
+
+This repository provides both simple and more complete examples.
+
+**Simple / Minimal Example**
+- Basic reveal animation
+- Static probability list
+- Simple claiming button
+
+**Recommended / Production Example**
+- Rich animations with rarity feedback
+- Clear visual + textual probability breakdown
+- Full guided claiming flow with previews
+- Optimistic collection updates
+
+> Look for example code in the repository (components and patterns are designed to be copied and adapted).
 
 ---
 
 ## 6. Machine Instructions (For AI Agents)
 
-See `spec.yaml` in the root of this repository for structured instructions optimized for AI code generation and integration assistance.
+This repository includes a structured `spec.yaml` file optimized for AI consumption.
 
 Key instructions include:
 - Building beautiful and accessible reveal animations
-- Implementing clear probability visualization
-- Creating guided, safe on-chain claiming flows
-- Supporting multiple integration complexity levels
+- Implementing clear probability visualization (visual + textual)
+- Creating guided, safe on-chain claiming flows with WharfKit
+- Supporting multiple integration levels (Minimal, Recommended, Advanced)
+- Following Pixel Journey design and animation best practices
+
+AI agents should start by reading `spec.yaml` for the most structured guidance.
 
 ---
 
-## 7. spec.yaml (Machine-Optimized Specification)
-
-```yaml
-blueprint:
-  id: wax-drops-and-pack-opening-experience
-  tier: 2
-  category: atomic-ecosystem
-  status: in-development
-
-features:
-  - engaging_reveal_animations
-  - probability_visualization
-  - real_time_result_tracking
-  - guided_on_chain_claiming
-  - accessibility_support
-  - multiple_integration_levels
-
-machine_instructions:
-  - "Build beautiful animated reveal experience with accessibility support"
-  - "Implement clear probability visualization using both visual and textual formats"
-  - "Add guided on-chain claiming flow with WharfKit and clear signing previews"
-  - "Support simple, recommended, and advanced integration levels"
-  - "Follow Pixel Journey design principles and animation best practices"
-```
-
----
-
-## 8. Ecosystem Position
+## 7. Ecosystem Position
 
 This repository is part of the broader Pixel Journey WAX blueprint collection and works well alongside:
 
@@ -216,7 +204,7 @@ It builds upon the foundational standards defined in:
 
 ---
 
-## 9. License & Credits
+## 8. License & Credits
 
 MIT License
 
