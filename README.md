@@ -6,7 +6,7 @@
 
 **Goal:** Provide a high-quality, educational, and practical reference example for building delightful, transparent, and fair drop and pack opening experiences on WAX.
 
-This repository is designed to be useful for both human developers and AI-assisted development. It aims for reference-level quality in education, code patterns, and production readiness.
+This repository is designed to be useful for both human developers and AI-assisted development. It aims for reference-level quality in education, code patterns, safety, and production readiness.
 
 ---
 
@@ -20,9 +20,9 @@ This blueprint aims to raise the standard by delivering experiences that are:
 - **Transparent** — clear probability communication
 - **Fair** — honest mechanics and good UX
 - **Educational** — helps users understand what is happening
-- **Safe** — clear previews and graceful error handling
+- **Safe** — clear previews, graceful error handling, and responsible design
 
-We build this for long-term participants in the WAX ecosystem — both end users and developers — who want their experiences to feel premium and trustworthy.
+We build this for long-term participants in the WAX ecosystem — both end users and developers — who want their experiences to feel premium, trustworthy, and responsibly designed.
 
 ---
 
@@ -37,7 +37,7 @@ We build this for long-term participants in the WAX ecosystem — both end users
 **For AI Agents & AI-Assisted Development**
 - Start with the `spec.yaml` for structured machine instructions.
 - Use the Architecture, Best Practices, and Code Examples sections as high-quality context.
-- Follow the patterns and safety considerations when generating code.
+- Follow the patterns, safety considerations, and educational tone when generating code.
 
 ---
 
@@ -66,7 +66,7 @@ After studying this repository, you should be able to:
 - Design emotionally engaging and fair reveal experiences
 - Visualize probabilities effectively
 - Implement smooth on-chain claiming flows using WharfKit
-- Build systems that feel premium, trustworthy, and production-ready
+- Build systems that feel premium, trustworthy, safe, and production-ready
 
 ---
 
@@ -91,6 +91,7 @@ After studying this repository, you should be able to:
   ResultDisplay.tsx
   ClaimPanel.tsx               # Guided on-chain claiming with previews
   CollectionUpdate.tsx
+  ErrorBoundary.tsx
 ```
 
 ### Key Design Decisions & Rationale
@@ -110,7 +111,7 @@ After studying this repository, you should be able to:
 3. Animation plays
 4. Result is displayed + collection is updated optimistically
 5. On-chain claim is triggered with preview
-6. Final state is confirmed from chain
+6. Final state is confirmed from chain (with rollback on failure)
 
 ---
 
@@ -119,23 +120,24 @@ After studying this repository, you should be able to:
 ### Recommended Integration Path
 
 **Phase 1 – Core Reveal Experience**
-- Implement `RevealAnimation` with proper timing and accessibility.
+- Implement `RevealAnimation` with proper timing, easing, and accessibility support.
 - Add `ProbabilityBreakdown` for clear visual + textual odds.
 
 **Phase 2 – On-Chain Integration**
 - Connect `ClaimPanel` using WharfKit with clear transaction previews.
-- Implement optimistic collection updates with safe rollback.
+- Implement optimistic collection updates with safe rollback logic.
 
-**Phase 3 – Polish & Production**
+**Phase 3 – Polish & Production Readiness**
 - Add proper error handling, loading states, and accessibility attributes.
 - Test on average mobile devices.
 - Add fairness/transparency messaging where relevant.
+- Implement graceful degradation for network issues.
 
 ### Integration Levels
 
 | Level           | Description                                                                 | Recommended For                          |
 |-----------------|-----------------------------------------------------------------------------|------------------------------------------|
-| **Minimal**         | Basic reveal + static probability + simple claim                            | Prototypes, MVPs, learning               |
+| **Minimal**         | Basic reveal + static probability + simple claim button                     | Prototypes, MVPs, learning               |
 | **Recommended**     | Full guided claiming, optimistic updates, clear probability, accessibility  | Most production applications             |
 | **Advanced**        | Interactive probability explorer, simulation mode, advanced animations      | High-engagement games or collector tools |
 
@@ -154,16 +156,16 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 ### Animation Principles
 
-- Build anticipation before the reveal (this is often more important than the reveal itself).
-- Use motion and scale to communicate rarity without being overwhelming.
+- Build anticipation before the reveal (this moment is often more important than the reveal itself).
+- Use motion and scale to communicate rarity without being overwhelming or manipulative.
 - Respect `prefers-reduced-motion`.
-- Prioritize performance (prefer `transform` and `opacity` over layout properties).
+- Prioritize performance (prefer `transform` and `opacity`).
 
 ### On-Chain Safety & UX
 
 - Always show clear transaction previews using WharfKit.
 - Handle errors gracefully with helpful, calm messages.
-- Use optimistic updates only when you can safely rollback.
+- Use optimistic updates only when rollback is trivial and safe.
 - Clearly communicate when something goes wrong and what the user can do next.
 
 ### Accessibility & Performance
@@ -179,13 +181,25 @@ See `spec.yaml` for machine-readable definitions of these levels.
 - Be transparent about how outcomes are determined.
 - Provide clear explanations when a user receives a result.
 - Consider adding an “expected value” view for more complex drops.
+- Avoid mechanics that feel manipulative or exploit psychological biases.
 
 ### Anti-Patterns to Avoid
 
-- Hiding probabilities behind tooltips or “tap to reveal”.
-- Overly flashy animations that feel manipulative.
-- Assuming users understand blockchain concepts.
+- Hiding probabilities behind tooltips or “tap to reveal.”
+- Overly flashy or manipulative animations.
+- Assuming users understand blockchain mechanics.
 - Poor error messaging that increases user anxiety.
+- Optimistic updates on high-stakes actions without safe rollback.
+
+### Production Readiness Checklist
+
+- [ ] Clear transaction previews for all on-chain actions
+- [ ] Graceful error handling with user-friendly messages
+- [ ] Accessibility support (reduced motion, screen reader, keyboard)
+- [ ] Performance tested on average mobile devices
+- [ ] Probability information is always visible and understandable
+- [ ] Optimistic updates have safe rollback paths
+- [ ] Loading and error states are clearly communicated
 
 ---
 
@@ -281,7 +295,6 @@ async function claimWithOptimisticUpdate(
     });
     return result;
   } catch (error) {
-    // Rollback optimistic update
     updateUI({ ...dropResult, claimed: false });
     onError(error);
     throw error;
@@ -295,8 +308,10 @@ async function claimWithOptimisticUpdate(
 try {
   await claimWithOptimisticUpdate(...);
 } catch (error: any) {
-  if (error.message.includes('insufficient')) {
+  if (error.message?.includes('insufficient')) {
     showToast('Not enough resources to claim. Please try again later.');
+  } else if (error.message?.includes('network')) {
+    showToast('Network issue. Please check your connection and try again.');
   } else {
     showToast('Something went wrong. Please try again.');
   }
