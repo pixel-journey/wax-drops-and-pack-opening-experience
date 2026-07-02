@@ -173,22 +173,65 @@ You can choose different levels of complexity depending on your needs:
 
 ---
 
-## 5. Demo & Code Examples
+## 5. Code Examples
 
-This repository provides both simple and more complete examples.
+Here are some practical patterns you can adapt:
 
-**Simple / Minimal Example**
-- Basic reveal animation
-- Static probability list
-- Simple claiming button
+### Simple Reveal Animation (using framer-motion)
 
-**Recommended / Production Example**
-- Rich animations with rarity feedback
-- Clear visual + textual probability breakdown
-- Full guided claiming flow with previews
-- Optimistic collection updates
+```tsx
+// RevealAnimation.tsx (simplified)
+import { motion } from 'framer-motion';
 
-> Look for example code in the repository (components and patterns are designed to be copied and adapted).
+export function RevealAnimation({ children, onComplete }: { children: React.ReactNode; onComplete?: () => void }) {
+  return (
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.23, 1.0, 0.32, 1] }}
+      onAnimationComplete={onComplete}
+    >
+      {children}
+    </motion.div>
+  );
+}
+```
+
+### Basic Probability Display
+
+```tsx
+// ProbabilityBreakdown.tsx (simplified)
+export function ProbabilityBreakdown({ probabilities }: { probabilities: Array<{ name: string; chance: number }> }) {
+  return (
+    <div className="space-y-2">
+      {probabilities.map((p, i) => (
+        <div key={i} className="flex justify-between">
+          <span>{p.name}</span>
+          <span className="font-mono">{(p.chance * 100).toFixed(1)}%</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Guided Claiming with WharfKit (conceptual)
+
+```ts
+// Claim flow example
+async function claimReward(session: Session, assetIds: string[]) {
+  const action = {
+    account: 'atomicassets',
+    name: 'claimdrop',
+    data: { /* ... */ },
+  };
+
+  const result = await session.transact({ actions: [action] });
+  return result;
+}
+```
+
+> These are simplified examples. Full production versions should include proper error handling, loading states, and accessibility features.
 
 ---
 
