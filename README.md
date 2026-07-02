@@ -47,8 +47,10 @@ This repository includes a dedicated `/examples` folder with production-ready, w
 - `RevealAnimation.tsx` — Smooth, accessible animated reveal component
 - `ProbabilityBreakdown.tsx` — Clean visual + textual probability display
 - `ClaimFlow.tsx` — Optimistic claiming with error handling and rollback
+- `useDropOpening.ts` — Custom hook for managing the full opening + claiming flow
+- `ErrorBoundary.tsx` — Reusable error boundary
 
-These examples follow strict TypeScript, modern React patterns, and WharfKit best practices. They are designed to be copied and adapted.
+These examples follow strict TypeScript, modern React patterns, and WharfKit best practices.
 
 ---
 
@@ -208,11 +210,13 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 Real, reusable component examples are available in the `/examples` folder:
 
-- `RevealAnimation.tsx` — Smooth, accessible animated reveal
-- `ProbabilityBreakdown.tsx` — Clean visual + textual probability display
-- `ClaimFlow.tsx` — Optimistic claiming with error handling and rollback
+- `RevealAnimation.tsx`
+- `ProbabilityBreakdown.tsx`
+- `ClaimFlow.tsx`
+- `useDropOpening.ts` — Custom hook for the full opening + claiming flow
+- `ErrorBoundary.tsx` — Reusable error boundary
 
-These examples follow strict TypeScript, modern React patterns, and WharfKit best practices. They are designed to be copied and adapted.
+These examples follow strict TypeScript, modern React patterns, and WharfKit best practices.
 
 ---
 
