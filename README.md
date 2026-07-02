@@ -6,7 +6,7 @@
 
 **Goal:** Provide a high-quality, educational, and practical reference example for building delightful, transparent, and fair drop and pack opening experiences on WAX.
 
-This repository is designed to be useful for both human developers and AI-assisted development. It aims for reference-level quality in education, code patterns, safety, and production readiness.
+This repository includes **real, reusable component examples** and follows modern best practices for WAX, WharfKit, React, and accessibility.
 
 ---
 
@@ -22,7 +22,7 @@ This blueprint aims to raise the standard by delivering experiences that are:
 - **Educational** — helps users understand what is happening
 - **Safe** — clear previews, graceful error handling, and responsible design
 
-We build this for long-term participants in the WAX ecosystem — both end users and developers — who want their experiences to feel premium, trustworthy, and responsibly designed.
+We build this for long-term participants in the WAX ecosystem — both end users and developers.
 
 ---
 
@@ -31,13 +31,24 @@ We build this for long-term participants in the WAX ecosystem — both end users
 **For Human Developers**
 1. Read the Educational Core and Architecture sections.
 2. Review the Integration Guide and Best Practices.
-3. Explore the Code Examples.
+3. Explore the real component examples in the `/examples` folder.
 4. Adapt the patterns into your own project.
 
 **For AI Agents & AI-Assisted Development**
 - Start with the `spec.yaml` for structured machine instructions.
-- Use the Architecture, Best Practices, and Code Examples sections as high-quality context.
-- Follow the patterns, safety considerations, and educational tone when generating code.
+- Use the Architecture, Best Practices, and `/examples` components as high-quality context.
+
+---
+
+## Examples Folder
+
+This repository includes a dedicated `/examples` folder with production-ready, well-documented components:
+
+- `RevealAnimation.tsx` — Smooth, accessible animated reveal component
+- `ProbabilityBreakdown.tsx` — Clean visual + textual probability display
+- `ClaimFlow.tsx` — Optimistic claiming with error handling and rollback
+
+These examples follow strict TypeScript, modern React patterns, and WharfKit best practices. They are designed to be copied and adapted.
 
 ---
 
@@ -86,10 +97,10 @@ After studying this repository, you should be able to:
 ```
 /components/
   PackSelector.tsx
-  RevealAnimation.tsx          # Core animated reveal engine
-  ProbabilityBreakdown.tsx     # Visual + textual probability display
+  RevealAnimation.tsx
+  ProbabilityBreakdown.tsx
   ResultDisplay.tsx
-  ClaimPanel.tsx               # Guided on-chain claiming with previews
+  ClaimPanel.tsx
   CollectionUpdate.tsx
   ErrorBoundary.tsx
 ```
@@ -120,24 +131,23 @@ After studying this repository, you should be able to:
 ### Recommended Integration Path
 
 **Phase 1 – Core Reveal Experience**
-- Implement `RevealAnimation` with proper timing, easing, and accessibility support.
+- Implement `RevealAnimation` with proper timing and accessibility.
 - Add `ProbabilityBreakdown` for clear visual + textual odds.
 
 **Phase 2 – On-Chain Integration**
 - Connect `ClaimPanel` using WharfKit with clear transaction previews.
-- Implement optimistic collection updates with safe rollback logic.
+- Implement optimistic collection updates with safe rollback.
 
 **Phase 3 – Polish & Production Readiness**
 - Add proper error handling, loading states, and accessibility attributes.
 - Test on average mobile devices.
 - Add fairness/transparency messaging where relevant.
-- Implement graceful degradation for network issues.
 
 ### Integration Levels
 
 | Level           | Description                                                                 | Recommended For                          |
 |-----------------|-----------------------------------------------------------------------------|------------------------------------------|
-| **Minimal**         | Basic reveal + static probability + simple claim button                     | Prototypes, MVPs, learning               |
+| **Minimal**         | Basic reveal + static probability + simple claim                            | Prototypes, MVPs, learning               |
 | **Recommended**     | Full guided claiming, optimistic updates, clear probability, accessibility  | Most production applications             |
 | **Advanced**        | Interactive probability explorer, simulation mode, advanced animations      | High-engagement games or collector tools |
 
@@ -151,13 +161,13 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 - Always combine **visual** and **textual** representations.
 - Consider showing expected value for more complex drops.
-- Use progressive disclosure — don’t overwhelm users with too much information at once.
+- Use progressive disclosure to avoid overwhelming users.
 - Test with real users — clarity builds trust.
 
 ### Animation Principles
 
-- Build anticipation before the reveal (this moment is often more important than the reveal itself).
-- Use motion and scale to communicate rarity without being overwhelming or manipulative.
+- Build anticipation before the reveal.
+- Use motion and scale to communicate rarity without being overwhelming.
 - Respect `prefers-reduced-motion`.
 - Prioritize performance (prefer `transform` and `opacity`).
 
@@ -166,7 +176,7 @@ See `spec.yaml` for machine-readable definitions of these levels.
 - Always show clear transaction previews using WharfKit.
 - Handle errors gracefully with helpful, calm messages.
 - Use optimistic updates only when rollback is trivial and safe.
-- Clearly communicate when something goes wrong and what the user can do next.
+- Clearly communicate when something goes wrong.
 
 ### Accessibility & Performance
 
@@ -180,16 +190,7 @@ See `spec.yaml` for machine-readable definitions of these levels.
 - Never hide or obscure probability information.
 - Be transparent about how outcomes are determined.
 - Provide clear explanations when a user receives a result.
-- Consider adding an “expected value” view for more complex drops.
-- Avoid mechanics that feel manipulative or exploit psychological biases.
-
-### Anti-Patterns to Avoid
-
-- Hiding probabilities behind tooltips or “tap to reveal.”
-- Overly flashy or manipulative animations.
-- Assuming users understand blockchain mechanics.
-- Poor error messaging that increases user anxiety.
-- Optimistic updates on high-stakes actions without safe rollback.
+- Avoid mechanics that feel manipulative.
 
 ### Production Readiness Checklist
 
@@ -205,120 +206,13 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 ## 5. Code Examples
 
-Here are more complete, production-oriented examples:
+Real, reusable component examples are available in the `/examples` folder:
 
-### 1. RevealAnimation (Recommended Production Pattern)
+- `RevealAnimation.tsx` — Smooth, accessible animated reveal
+- `ProbabilityBreakdown.tsx` — Clean visual + textual probability display
+- `ClaimFlow.tsx` — Optimistic claiming with error handling and rollback
 
-```tsx
-'use client';
-
-import { motion, AnimatePresence } from 'framer-motion';
-
-interface RevealAnimationProps {
-  isRevealing: boolean;
-  onComplete?: () => void;
-  children: React.ReactNode;
-}
-
-export function RevealAnimation({ isRevealing, onComplete, children }: RevealAnimationProps) {
-  return (
-    <div className="relative flex items-center justify-center">
-      <AnimatePresence mode="wait">
-        {isRevealing ? (
-          <motion.div
-            key="revealing"
-            initial={{ scale: 0.9, opacity: 0.7 }}
-            animate={{ scale: [0.9, 1.08, 1], opacity: 1 }}
-            transition={{ duration: 0.65, ease: [0.23, 1.0, 0.32, 1] }}
-            onAnimationComplete={onComplete}
-            className="flex items-center justify-center"
-          >
-            {children}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
-}
-```
-
-### 2. ProbabilityBreakdown (Recommended)
-
-```tsx
-'use client';
-
-export function ProbabilityBreakdown({ 
-  items 
-}: { 
-  items: Array<{ name: string; chance: number; color?: string }> 
-}) {
-  return (
-    <div className="space-y-2.5">
-      {items.map((item, index) => (
-        <div key={index} className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-3">
-            <div 
-              className="h-2.5 w-2.5 rounded-full" 
-              style={{ backgroundColor: item.color || '#22c55e' }} 
-            />
-            <span>{item.name}</span>
-          </div>
-          <span className="font-mono tabular-nums text-muted-foreground">
-            {(item.chance * 100).toFixed(1)}%
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
-### 3. Optimistic Claiming with Rollback (Production Pattern)
-
-```ts
-async function claimWithOptimisticUpdate(
-  session: any,
-  dropResult: any,
-  updateUI: (result: any) => void,
-  onError: (error: any) => void
-) {
-  const optimistic = { ...dropResult, claimed: true };
-  updateUI(optimistic);
-
-  try {
-    const result = await session.transact({
-      actions: [{
-        account: 'atomicassets',
-        name: 'claimdrop',
-        data: { /* ... */ }
-      }]
-    });
-    return result;
-  } catch (error) {
-    updateUI({ ...dropResult, claimed: false });
-    onError(error);
-    throw error;
-  }
-}
-```
-
-### 4. Error Handling Example
-
-```ts
-try {
-  await claimWithOptimisticUpdate(...);
-} catch (error: any) {
-  if (error.message?.includes('insufficient')) {
-    showToast('Not enough resources to claim. Please try again later.');
-  } else if (error.message?.includes('network')) {
-    showToast('Network issue. Please check your connection and try again.');
-  } else {
-    showToast('Something went wrong. Please try again.');
-  }
-}
-```
-
-> These examples are designed to be production-oriented. Full implementations should include proper error boundaries, loading states, and accessibility attributes.
+These examples follow strict TypeScript, modern React patterns, and WharfKit best practices. They are designed to be copied and adapted.
 
 ---
 
