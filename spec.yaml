@@ -1,0 +1,80 @@
+blueprint:
+  id: wax-drops-and-pack-opening-experience
+  name: Drops & Pack Opening Experience
+  tier: 2
+  category: atomic-ecosystem
+  status: in-development
+  version: 0.2
+
+metadata:
+  description: |
+    A high-quality reference implementation for building delightful, transparent, 
+    and fair drop and pack opening experiences on WAX. Includes animations, 
+    probability visualization, result tracking, and guided on-chain claiming.
+  target_audience:
+    - Human developers learning WAX UX patterns
+    - AI agents generating drop/pack opening features
+    - Teams building games or NFT projects on WAX
+  related_blueprints:
+    - wax-blends-creator-and-visualizer
+    - wax-advanced-drop-mechanics-toolkit
+    - wax-blend-economy-simulator
+
+features:
+  - engaging_reveal_animations
+  - probability_visualization
+  - real_time_result_tracking
+  - guided_on_chain_claiming
+  - accessibility_support
+  - multiple_integration_levels
+  - optimistic_ui_updates
+
+integration_levels:
+  minimal:
+    description: Basic reveal animation + static probability display + simple claiming
+    recommended_for: Quick prototypes or learning the core concepts
+  recommended:
+    description: Full guided claiming, optimistic updates, good animations, and clear probability breakdown
+    recommended_for: Most production use cases
+  advanced:
+    description: Interactive probability explorer, simulation mode, advanced animations, and analytics
+    recommended_for: High-engagement games or serious collector tools
+
+machine_instructions:
+  - |
+    Build a beautiful and performant animated reveal experience for WAX drops and packs.
+    Support accessibility (reduced motion) and communicate rarity through motion and visuals.
+  - |
+    Implement clear probability visualization using both visual elements (bars, colors) and textual explanations.
+    Avoid information overload while remaining transparent.
+  - |
+    Create a guided on-chain claiming flow using WharfKit. Always show clear signing previews
+    and handle errors gracefully with helpful user messages.
+  - |
+    Support multiple integration levels: Minimal, Recommended, and Advanced.
+    Make it easy for developers to start simple and progressively enhance.
+  - |
+    Use optimistic UI updates for collection state where safe, and always confirm final state on-chain.
+  - |
+    Follow Pixel Journey design principles: retro-pixel aesthetic mixed with modern glassmorphism,
+    high attention to animation quality, and strong accessibility.
+
+technical_requirements:
+  framework: Next.js 15 + TypeScript (strict)
+  styling: Tailwind + shadcn/ui + framer-motion
+  blockchain: WharfKit (Session Kit preferred)
+  data: Hyperion or Light-API
+  design_system: pixel-journey-design-system
+
+best_practices:
+  - Always combine visual and textual probability information
+  - Build anticipation before reveals
+  - Respect prefers-reduced-motion
+  - Show clear transaction previews for all on-chain actions
+  - Handle edge cases (network issues, insufficient resources, failed claims) gracefully
+
+future_extensions:
+  - Outcome simulation mode ("what if I open 10 packs?")
+  - Social sharing of results
+  - Advanced creator analytics dashboard
+  - Sound design integration
