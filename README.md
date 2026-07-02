@@ -171,43 +171,101 @@ You can choose different levels of complexity depending on your needs:
 - Rich visual probability breakdown (recommended for most cases)
 - Full interactive explorer + simulation (for advanced tools)
 
+### Accessibility & Performance
+
+- Always support `prefers-reduced-motion`
+- Use semantic markup and ARIA labels for screen readers
+- Keep animations performant (prefer `transform` and `opacity`)
+- Test on average mobile devices
+
+### Fairness & Trust
+
+- Never hide or obscure probability information
+- Be transparent about how outcomes are determined
+- Provide clear explanations when a user receives a result
+- Consider adding an "expected value" view for more complex drops
+
 ---
 
 ## 5. Code Examples
 
-Here are some practical patterns you can adapt:
+Here are more complete and production-oriented examples you can adapt:
 
-### Simple Reveal Animation (using framer-motion)
+### 1. RevealAnimation Component (Recommended)
 
 ```tsx
-// RevealAnimation.tsx (simplified)
-import { motion } from 'framer-motion';
+'use client';
 
-export function RevealAnimation({ children, onComplete }: { children: React.ReactNode; onComplete?: () => void }) {
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+
+interface RevealAnimationProps {
+  isRevealing: boolean;
+  result: any;
+  onComplete?: () => void;
+  children: React.ReactNode;
+}
+
+export function RevealAnimation({ 
+  isRevealing, 
+  result, 
+  onComplete, 
+  children 
+}: RevealAnimationProps) {
   return (
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.23, 1.0, 0.32, 1] }}
-      onAnimationComplete={onComplete}
-    >
-      {children}
-    </motion.div>
+    <div className="relative">
+      <AnimatePresence mode="wait">
+        {isRevealing ? (
+          <motion.div
+            key="revealing"
+            initial={{ scale: 0.85, opacity: 0.6 }}
+            animate={{ scale: [0.85, 1.05, 1], opacity: 1 }}
+            transition={{ duration: 0.7, ease: [0.23, 1.0, 0.32, 1] }}
+            onAnimationComplete={onComplete}
+            className="flex items-center justify-center"
+          >
+            {children}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="result"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {/* Result display */}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 ```
 
-### Basic Probability Display
+### 2. ProbabilityBreakdown Component
 
 ```tsx
-// ProbabilityBreakdown.tsx (simplified)
-export function ProbabilityBreakdown({ probabilities }: { probabilities: Array<{ name: string; chance: number }> }) {
+'use client';
+
+export function ProbabilityBreakdown({ 
+  probabilities 
+}: { 
+  probabilities: Array<{ name: string; chance: number; color?: string }> 
+}) {
   return (
-    <div className="space-y-2">
-      {probabilities.map((p, i) => (
-        <div key={i} className="flex justify-between">
-          <span>{p.name}</span>
-          <span className="font-mono">{(p.chance * 100).toFixed(1)}%</span>
+    <div className="space-y-3">
+      {probabilities.map((item, index) => (
+        <div key={index} className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: item.color || '#22c55e' }} 
+            />
+            <span className="text-sm">{item.name}</span>
+          </div>
+          <span className="font-mono text-sm tabular-nums">
+            {(item.chance * 100).toFixed(1)}%
+          </span>
         </div>
       ))}
     </div>
@@ -215,23 +273,39 @@ export function ProbabilityBreakdown({ probabilities }: { probabilities: Array<{
 }
 ```
 
-### Guided Claiming with WharfKit (conceptual)
+### 3. Optimistic Claiming Flow (Recommended Pattern)
 
 ```ts
-// Claim flow example
-async function claimReward(session: Session, assetIds: string[]) {
-  const action = {
-    account: 'atomicassets',
-    name: 'claimdrop',
-    data: { /* ... */ },
-  };
+async function claimWithOptimisticUpdate(
+  session: any, 
+  dropResult: any, 
+  onSuccess: (result: any) => void,
+  onError: (error: any) => void
+) {
+  // Optimistically update UI
+  const optimisticResult = { ...dropResult, claimed: true };
+  onSuccess(optimisticResult);
 
-  const result = await session.transact({ actions: [action] });
-  return result;
+  try {
+    const tx = await session.transact({
+      actions: [{
+        account: 'atomicassets',
+        name: 'claimdrop',
+        data: { /* ... */ }
+      }]
+    });
+    
+    // Confirm final state from chain if needed
+    return tx;
+  } catch (error) {
+    // Rollback optimistic update
+    onError(error);
+    throw error;
+  }
 }
 ```
 
-> These are simplified examples. Full production versions should include proper error handling, loading states, and accessibility features.
+> These examples are production-oriented. Full implementations should include proper error boundaries, loading states, and accessibility attributes.
 
 ---
 
