@@ -78,7 +78,64 @@ After studying and implementing this blueprint, you will be able to:
 
 ---
 
-## 3. Architecture & Technical Recommendations
+## 3. Animation & Reveal Principles (Detailed Guidance)
+
+Great reveal experiences are not just about flashy animations — they are about **emotional pacing, clarity, and satisfaction**.
+
+### Core Principles
+
+- **Anticipation > Surprise**: Build tension before the reveal. The moment before the result appears is often more important than the result itself.
+- **Clear Cause and Effect**: Every animation should communicate *why* something happened.
+- **Satisfying Feedback**: Use motion, scale, color, and (optionally) sound to make rare outcomes feel special without being overwhelming.
+- **Accessibility First**: Always support `prefers-reduced-motion`. Provide text alternatives and clear result descriptions for screen readers.
+- **Performance**: Animations must feel instant on average devices. Use GPU-accelerated properties (transform, opacity) and avoid layout thrashing.
+
+### Recommended Animation Structure
+
+1. **Tease Phase** (200–400ms) — Pack glows, shakes slightly, or particles appear.
+2. **Build Phase** (400–800ms) — Increasing intensity (faster particles, brighter glow, rising pitch if using audio).
+3. **Reveal Moment** — Clear, impactful transition (scale + fade or burst effect).
+4. **Settle Phase** — Result card/component animates into final position with subtle secondary motion.
+
+### Rarity Communication Through Motion
+
+- Common → Subtle, quick animation
+- Uncommon → Clearer motion + slight emphasis
+- Rare / Legendary → Slower, more dramatic build + stronger settle animation + possible secondary effects (sparkles, glow pulses)
+
+---
+
+## 4. Probability Visualization Patterns
+
+Showing probabilities clearly without overwhelming users is one of the hardest parts of these experiences.
+
+### Recommended Approaches
+
+**Simple List (Best for beginners)**
+- Clean bullet list with percentages and item names
+- Good for low-to-medium complexity drops
+
+**Visual Breakdown (Recommended default)**
+- Horizontal or vertical bar chart + accompanying text
+- Color-coded by rarity tier
+- Hover/focus states that highlight the corresponding visual outcome
+
+**Expected Value Callout**
+- When relevant, show approximate expected value alongside probabilities
+- Especially useful for economy-focused or high-stakes drops
+
+**Interactive Explorer (Advanced)**
+- Allow users to simulate opening 10x or 100x packs and see statistical distribution
+- Powerful for serious collectors and creators
+
+### Anti-Patterns to Avoid
+- Hiding probabilities behind tooltips only
+- Using vague language like “higher chance” without numbers
+- Overloading the screen with too many rare items at once
+
+---
+
+## 5. Architecture & Technical Recommendations
 
 ### Recommended Tech Stack
 - **Framework**: Next.js 15 + TypeScript (strict mode)
@@ -109,7 +166,7 @@ After studying and implementing this blueprint, you will be able to:
 
 ---
 
-## 4. Design & Visual Guidelines
+## 6. Design & Visual Guidelines
 
 - **Aesthetic**: Retro-pixel art mixed with modern glassmorphism (Pixel Journey signature)
 - **Animation Philosophy**: Satisfying, not flashy. Clear cause-and-effect.
@@ -118,17 +175,7 @@ After studying and implementing this blueprint, you will be able to:
 
 ---
 
-## 5. Probability & Fairness Best Practices
-
-- Always show both **visual** and **textual** probability information
-- Clearly communicate **expected value** when relevant
-- Use deterministic client-side simulation where possible before on-chain confirmation
-- Provide clear “What can I get?” exploration mode
-- Never hide or obscure mechanics
-
----
-
-## 6. On-Chain Integration (WharfKit)
+## 7. On-Chain Integration (WharfKit)
 
 - All claiming actions must show clear previews of what will be signed
 - Use session-based signing for smooth UX
@@ -137,7 +184,7 @@ After studying and implementing this blueprint, you will be able to:
 
 ---
 
-## 7. Machine-Optimized Spec (spec.yaml)
+## 8. Machine-Optimized Spec (spec.yaml)
 
 ```yaml
 blueprint:
@@ -162,7 +209,7 @@ machine_instructions:
 
 ---
 
-## 8. Implementation Recommendations & Roadmap
+## 9. Implementation Recommendations & Roadmap
 
 **Phase 1 (MVP)**
 - Basic reveal animation
@@ -182,7 +229,7 @@ machine_instructions:
 
 ---
 
-## 9. Ecosystem Position & Related Blueprints
+## 10. Ecosystem Position & Related Blueprints
 
 This experience is a direct companion to:
 - `wax-blends-creator-and-visualizer`
@@ -197,7 +244,7 @@ It builds on the perfected foundational layer:
 
 ---
 
-## 10. License & Credits
+## 11. License & Credits
 
 MIT License — Built with ❤️ to raise the standard of drop and pack opening experiences on WAX.
 
