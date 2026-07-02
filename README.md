@@ -6,7 +6,7 @@
 
 **Goal:** Provide a high-quality, educational, and practical reference example for building delightful, transparent, and fair drop and pack opening experiences on WAX.
 
-This repository is designed to be useful for both human developers and AI-assisted development.
+This repository is designed to be useful for both human developers and AI-assisted development. It aims for reference-level quality in education, code patterns, and production readiness.
 
 ---
 
@@ -20,8 +20,9 @@ This blueprint aims to raise the standard by delivering experiences that are:
 - **Transparent** — clear probability communication
 - **Fair** — honest mechanics and good UX
 - **Educational** — helps users understand what is happening
+- **Safe** — clear previews and graceful error handling
 
-We build this for long-term participants in the WAX ecosystem — both end users and developers.
+We build this for long-term participants in the WAX ecosystem — both end users and developers — who want their experiences to feel premium and trustworthy.
 
 ---
 
@@ -29,14 +30,14 @@ We build this for long-term participants in the WAX ecosystem — both end users
 
 **For Human Developers**
 1. Read the Educational Core and Architecture sections.
-2. Review the Integration Guide.
-3. Explore the Code Examples and Best Practices.
-4. Use the patterns in your own project.
+2. Review the Integration Guide and Best Practices.
+3. Explore the Code Examples.
+4. Adapt the patterns into your own project.
 
 **For AI Agents & AI-Assisted Development**
 - Start with the `spec.yaml` for structured machine instructions.
-- Use the Architecture and Integration Guide sections as high-quality context.
-- Follow the patterns shown in the examples when generating code.
+- Use the Architecture, Best Practices, and Code Examples sections as high-quality context.
+- Follow the patterns and safety considerations when generating code.
 
 ---
 
@@ -65,7 +66,7 @@ After studying this repository, you should be able to:
 - Design emotionally engaging and fair reveal experiences
 - Visualize probabilities effectively
 - Implement smooth on-chain claiming flows using WharfKit
-- Build systems that feel premium and trustworthy
+- Build systems that feel premium, trustworthy, and production-ready
 
 ---
 
@@ -115,27 +116,28 @@ After studying this repository, you should be able to:
 
 ## 3. Integration Guide
 
-### How to Integrate This Pattern
+### Recommended Integration Path
 
-**Step 1: Basic Reveal**
-Start by implementing the `RevealAnimation` component with your drop/pack data.
+**Phase 1 – Core Reveal Experience**
+- Implement `RevealAnimation` with proper timing and accessibility.
+- Add `ProbabilityBreakdown` for clear visual + textual odds.
 
-**Step 2: Add Probability Display**
-Use the `ProbabilityBreakdown` pattern to show clear odds to the user.
+**Phase 2 – On-Chain Integration**
+- Connect `ClaimPanel` using WharfKit with clear transaction previews.
+- Implement optimistic collection updates with safe rollback.
 
-**Step 3: Connect On-Chain Claiming**
-Integrate the `ClaimPanel` using WharfKit. Always show transaction previews.
-
-**Step 4: Add Feedback & Polish**
-Implement optimistic collection updates and proper error handling.
+**Phase 3 – Polish & Production**
+- Add proper error handling, loading states, and accessibility attributes.
+- Test on average mobile devices.
+- Add fairness/transparency messaging where relevant.
 
 ### Integration Levels
 
-| Level           | Description                                                                 | When to Use                              |
+| Level           | Description                                                                 | Recommended For                          |
 |-----------------|-----------------------------------------------------------------------------|------------------------------------------|
-| **Minimal**         | Basic reveal animation + static probability list + simple claim button         | Prototypes, learning, MVPs               |
-| **Recommended**     | Full guided claiming, optimistic updates, good animations, clear probability breakdown | Most production applications             |
-| **Advanced**        | Interactive probability explorer, simulation mode, advanced animations         | High-engagement games or collector tools |
+| **Minimal**         | Basic reveal + static probability + simple claim                            | Prototypes, MVPs, learning               |
+| **Recommended**     | Full guided claiming, optimistic updates, clear probability, accessibility  | Most production applications             |
+| **Advanced**        | Interactive probability explorer, simulation mode, advanced animations      | High-engagement games or collector tools |
 
 See `spec.yaml` for machine-readable definitions of these levels.
 
@@ -145,125 +147,109 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 ### Probability Visualization
 
-- Always combine **visual** and **textual** representations
-- Consider showing expected value when relevant
-- Use progressive disclosure to avoid overwhelming users
-- Test with real users — clarity builds trust
+- Always combine **visual** and **textual** representations.
+- Consider showing expected value for more complex drops.
+- Use progressive disclosure — don’t overwhelm users with too much information at once.
+- Test with real users — clarity builds trust.
 
 ### Animation Principles
 
-- Build anticipation before the reveal
-- Use motion and scale to communicate rarity
-- Respect `prefers-reduced-motion`
-- Prioritize performance (use transform and opacity)
+- Build anticipation before the reveal (this is often more important than the reveal itself).
+- Use motion and scale to communicate rarity without being overwhelming.
+- Respect `prefers-reduced-motion`.
+- Prioritize performance (prefer `transform` and `opacity` over layout properties).
 
-### On-Chain Safety
+### On-Chain Safety & UX
 
-- Always show clear transaction previews using WharfKit
-- Handle errors gracefully with helpful messages
-- Use optimistic updates only when you can safely rollback
-- Communicate clearly when something goes wrong
-
-### Multiple Options
-
-You can choose different levels of complexity depending on your needs:
-- Simple static probability list (fast to implement)
-- Rich visual probability breakdown (recommended for most cases)
-- Full interactive explorer + simulation (for advanced tools)
+- Always show clear transaction previews using WharfKit.
+- Handle errors gracefully with helpful, calm messages.
+- Use optimistic updates only when you can safely rollback.
+- Clearly communicate when something goes wrong and what the user can do next.
 
 ### Accessibility & Performance
 
-- Always support `prefers-reduced-motion`
-- Use semantic markup and ARIA labels for screen readers
-- Keep animations performant (prefer `transform` and `opacity`)
-- Test on average mobile devices
+- Support reduced motion and provide text alternatives for visual reveals.
+- Use semantic HTML and ARIA labels.
+- Keep animations performant on average mobile devices.
+- Test the full flow end-to-end, including error states.
 
 ### Fairness & Trust
 
-- Never hide or obscure probability information
-- Be transparent about how outcomes are determined
-- Provide clear explanations when a user receives a result
-- Consider adding an "expected value" view for more complex drops
+- Never hide or obscure probability information.
+- Be transparent about how outcomes are determined.
+- Provide clear explanations when a user receives a result.
+- Consider adding an “expected value” view for more complex drops.
+
+### Anti-Patterns to Avoid
+
+- Hiding probabilities behind tooltips or “tap to reveal”.
+- Overly flashy animations that feel manipulative.
+- Assuming users understand blockchain concepts.
+- Poor error messaging that increases user anxiety.
 
 ---
 
 ## 5. Code Examples
 
-Here are more complete and production-oriented examples you can adapt:
+Here are more complete, production-oriented examples:
 
-### 1. RevealAnimation Component (Recommended)
+### 1. RevealAnimation (Recommended Production Pattern)
 
 ```tsx
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
 
 interface RevealAnimationProps {
   isRevealing: boolean;
-  result: any;
   onComplete?: () => void;
   children: React.ReactNode;
 }
 
-export function RevealAnimation({ 
-  isRevealing, 
-  result, 
-  onComplete, 
-  children 
-}: RevealAnimationProps) {
+export function RevealAnimation({ isRevealing, onComplete, children }: RevealAnimationProps) {
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center">
       <AnimatePresence mode="wait">
         {isRevealing ? (
           <motion.div
             key="revealing"
-            initial={{ scale: 0.85, opacity: 0.6 }}
-            animate={{ scale: [0.85, 1.05, 1], opacity: 1 }}
-            transition={{ duration: 0.7, ease: [0.23, 1.0, 0.32, 1] }}
+            initial={{ scale: 0.9, opacity: 0.7 }}
+            animate={{ scale: [0.9, 1.08, 1], opacity: 1 }}
+            transition={{ duration: 0.65, ease: [0.23, 1.0, 0.32, 1] }}
             onAnimationComplete={onComplete}
             className="flex items-center justify-center"
           >
             {children}
           </motion.div>
-        ) : (
-          <motion.div
-            key="result"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* Result display */}
-          </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );
 }
 ```
 
-### 2. ProbabilityBreakdown Component
+### 2. ProbabilityBreakdown (Recommended)
 
 ```tsx
 'use client';
 
 export function ProbabilityBreakdown({ 
-  probabilities 
+  items 
 }: { 
-  probabilities: Array<{ name: string; chance: number; color?: string }> 
+  items: Array<{ name: string; chance: number; color?: string }> 
 }) {
   return (
-    <div className="space-y-3">
-      {probabilities.map((item, index) => (
-        <div key={index} className="flex items-center justify-between">
+    <div className="space-y-2.5">
+      {items.map((item, index) => (
+        <div key={index} className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-3">
             <div 
-              className="w-3 h-3 rounded-full" 
+              className="h-2.5 w-2.5 rounded-full" 
               style={{ backgroundColor: item.color || '#22c55e' }} 
             />
-            <span className="text-sm">{item.name}</span>
+            <span>{item.name}</span>
           </div>
-          <span className="font-mono text-sm tabular-nums">
+          <span className="font-mono tabular-nums text-muted-foreground">
             {(item.chance * 100).toFixed(1)}%
           </span>
         </div>
@@ -273,39 +259,51 @@ export function ProbabilityBreakdown({
 }
 ```
 
-### 3. Optimistic Claiming Flow (Recommended Pattern)
+### 3. Optimistic Claiming with Rollback (Production Pattern)
 
 ```ts
 async function claimWithOptimisticUpdate(
-  session: any, 
-  dropResult: any, 
-  onSuccess: (result: any) => void,
+  session: any,
+  dropResult: any,
+  updateUI: (result: any) => void,
   onError: (error: any) => void
 ) {
-  // Optimistically update UI
-  const optimisticResult = { ...dropResult, claimed: true };
-  onSuccess(optimisticResult);
+  const optimistic = { ...dropResult, claimed: true };
+  updateUI(optimistic);
 
   try {
-    const tx = await session.transact({
+    const result = await session.transact({
       actions: [{
         account: 'atomicassets',
         name: 'claimdrop',
         data: { /* ... */ }
       }]
     });
-    
-    // Confirm final state from chain if needed
-    return tx;
+    return result;
   } catch (error) {
     // Rollback optimistic update
+    updateUI({ ...dropResult, claimed: false });
     onError(error);
     throw error;
   }
 }
 ```
 
-> These examples are production-oriented. Full implementations should include proper error boundaries, loading states, and accessibility attributes.
+### 4. Error Handling Example
+
+```ts
+try {
+  await claimWithOptimisticUpdate(...);
+} catch (error: any) {
+  if (error.message.includes('insufficient')) {
+    showToast('Not enough resources to claim. Please try again later.');
+  } else {
+    showToast('Something went wrong. Please try again.');
+  }
+}
+```
+
+> These examples are designed to be production-oriented. Full implementations should include proper error boundaries, loading states, and accessibility attributes.
 
 ---
 
