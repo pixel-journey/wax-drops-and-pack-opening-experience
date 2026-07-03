@@ -2,6 +2,10 @@
 
 This folder contains production-ready, reusable component examples for building drop and pack opening experiences on WAX.
 
+## Shared Types
+
+See `types.ts` for common interfaces used across the examples (`DropResult`, `ProbabilityItem`, `ClaimOptions`, etc.).
+
 ## Available Components
 
 | File                    | Description                                      | Recommended Use Case                  |
@@ -19,6 +23,7 @@ This folder contains production-ready, reusable component examples for building 
 2. Adapt the styling to match your design system (they use Tailwind + shadcn/ui conventions).
 3. Replace mock data with real data from your backend or on-chain sources.
 4. Connect `ClaimFlow` functions to your actual WharfKit session.
+5. Import shared types from `types.ts` for consistency.
 
 ## Best Practices
 
