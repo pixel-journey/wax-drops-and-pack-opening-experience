@@ -31,7 +31,7 @@ We build this for long-term participants in the WAX ecosystem — both end users
 **For Human Developers**
 1. Read the Educational Core and Architecture sections.
 2. Review the Integration Guide and Best Practices.
-3. Explore the real component examples in the `/examples` folder.
+3. Explore the real component examples in the `/examples` folder (including the demo).
 4. Adapt the patterns into your own project.
 
 **For AI Agents & AI-Assisted Development**
@@ -49,6 +49,7 @@ This repository includes a dedicated `/examples` folder with production-ready, w
 - `ClaimFlow.tsx` — Optimistic claiming with error handling and rollback
 - `useDropOpening.ts` — Custom hook for managing the full opening + claiming flow
 - `ErrorBoundary.tsx` — Reusable error boundary
+- `demo.tsx` — Example showing how to compose everything together
 
 These examples follow strict TypeScript, modern React patterns, and WharfKit best practices.
 
@@ -215,6 +216,7 @@ Real, reusable component examples are available in the `/examples` folder:
 - `ClaimFlow.tsx`
 - `useDropOpening.ts` — Custom hook for the full opening + claiming flow
 - `ErrorBoundary.tsx` — Reusable error boundary
+- `demo.tsx` — Example showing how to compose everything together
 
 These examples follow strict TypeScript, modern React patterns, and WharfKit best practices.
 
