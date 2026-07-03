@@ -207,7 +207,31 @@ See `spec.yaml` for machine-readable definitions of these levels.
 
 ---
 
-## 5. Code Examples
+## 5. Visual & UX Guidance
+
+### Design Principles
+
+- **Anticipation before reward**: Build tension before the reveal — this is often more emotionally impactful than the reveal itself.
+- **Clarity over spectacle**: Visuals should communicate information first, beauty second.
+- **Emotional pacing**: Use motion to match the emotional weight of the outcome (bigger reveals = more dramatic motion).
+- **Accessibility first**: All motion must respect `prefers-reduced-motion`. Provide text alternatives.
+
+### Recommended Patterns
+
+- Use scale + opacity for most reveals (performs well and feels premium).
+- Use color and particle effects to communicate rarity without overwhelming the user.
+- Keep probability information always visible — never hide it behind interactions.
+- Provide calm, clear feedback during claiming (loading → success/error states).
+
+### Anti-Patterns
+
+- Overly long or flashy animations that feel manipulative.
+- Hiding probabilities or making them hard to find.
+- Poor contrast or motion that causes accessibility issues.
+
+---
+
+## 6. Code Examples
 
 Real, reusable component examples are available in the `/examples` folder:
 
@@ -222,7 +246,7 @@ These examples follow strict TypeScript, modern React patterns, and WharfKit bes
 
 ---
 
-## 6. Machine Instructions (For AI Agents)
+## 7. Machine Instructions (For AI Agents)
 
 This repository includes a structured `spec.yaml` file optimized for AI consumption.
 
@@ -237,7 +261,32 @@ AI agents should start by reading `spec.yaml` for the most structured guidance.
 
 ---
 
-## 7. Ecosystem Position
+## 8. Future Extensions & Roadmap
+
+### Short-term Ideas
+- Add sound design layer for reveals (different sounds per rarity)
+- Add shareable result cards
+- Create a "simulate 10 opens" mode
+
+### Medium-term Ideas
+- Advanced probability analytics dashboard for creators
+- Integration with cross-drop pity/progression systems
+- Creator tools for designing and testing new drop mechanics
+
+### Long-term Vision
+
+The long-term goal for this blueprint is to evolve into a **full-featured, production-ready drop & pack opening framework** that includes:
+
+- A complete runnable demo application
+- Advanced simulation and analytics tools
+- Creator-friendly interfaces for designing drops
+- Deep integration with other Atomic ecosystem tools (blends, markets, templates)
+
+This repo is intended to serve as both an educational reference and a foundation that can grow into more complete tooling over time.
+
+---
+
+## 9. Ecosystem Position
 
 This repository is part of the broader Pixel Journey WAX blueprint collection and works well alongside:
 
@@ -253,7 +302,7 @@ It builds upon the foundational standards defined in:
 
 ---
 
-## 8. License & Credits
+## 10. License & Credits
 
 MIT License
 
