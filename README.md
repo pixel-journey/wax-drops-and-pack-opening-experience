@@ -1,5 +1,8 @@
 # wax-drops-and-pack-opening-experience
 
+> **Trust Label:** `educational-reference`  
+> **Verification:** See [VERIFICATION-LOG.md](VERIFICATION-LOG.md) for honest status of all claims (currently UNTESTED).
+
 > **Status:** 🔄 Deep Refinement (PX Perfection Standard v1.1)  
 > **Category:** Atomic Ecosystem – Drops & Pack Openings  
 > **Parent Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
