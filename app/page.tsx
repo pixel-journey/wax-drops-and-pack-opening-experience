@@ -132,6 +132,8 @@ export default function DropsAndPackPage() {
       ? 'text-emerald-400'
       : 'text-amber-300';
 
+  const stepPollDone = progress?.status === 'pending_claim';
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -140,7 +142,7 @@ export default function DropsAndPackPage() {
             DROPS & PACK OPENING
           </h1>
           <p className="text-xs opacity-60 mt-1">
-            transfer+unbox → poll → claimunboxed (WharfKit)
+            Atomic open path · transfer unbox → poll → claim
           </p>
         </header>
 
@@ -166,145 +168,207 @@ export default function DropsAndPackPage() {
         </div>
 
         {mode === 'live' && (
-          <div className="border border-white/10 bg-black/40 rounded-2xl p-4 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                id="packAsset"
-                value={assetId}
-                onChange={(e) => setAssetId(e.target.value)}
-                className="flex-1 bg-black/60 border border-white/10 px-4 py-3 rounded-xl font-mono text-sm"
-                placeholder="pack asset_id"
-                aria-label="Pack asset id"
-              />
-              <button
-                type="button"
-                onClick={loadLive}
-                disabled={loading || !assetId.trim()}
-                className="px-4 py-3 rounded-xl bg-sky-600 text-sm disabled:opacity-50"
+          <>
+            {/* Step strip */}
+            <nav
+              aria-label="Atomic pack open steps"
+              className="flex flex-wrap gap-2 text-xs font-medium"
+            >
+              <span className="rounded-full border border-sky-500/50 bg-sky-500/20 px-3 py-1 text-sky-100">
+                1 Transfer unbox
+              </span>
+              <span className="opacity-40 self-center">→</span>
+              <span
+                className={`rounded-full border px-3 py-1 ${
+                  progress
+                    ? 'border-violet-500/50 bg-violet-500/20 text-violet-100'
+                    : 'border-white/15 text-white/50'
+                }`}
               >
-                Load pack
-              </button>
-              <button
-                type="button"
-                onClick={loadProgress}
-                disabled={loading}
-                className="px-4 py-3 rounded-xl bg-violet-600 text-sm disabled:opacity-50"
+                Poll RNG
+              </span>
+              <span className="opacity-40 self-center">→</span>
+              <span
+                className={`rounded-full border px-3 py-1 ${
+                  stepPollDone
+                    ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-100'
+                    : 'border-white/15 text-white/50'
+                }`}
               >
-                Poll unbox
-              </button>
+                2 Claim unboxed
+              </span>
+            </nav>
+
+            <div className="border border-white/10 bg-black/40 rounded-2xl p-4 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  id="packAsset"
+                  value={assetId}
+                  onChange={(e) => setAssetId(e.target.value)}
+                  className="flex-1 bg-black/60 border border-white/10 px-4 py-3 rounded-xl font-mono text-sm"
+                  placeholder="pack asset_id"
+                  aria-label="Pack asset id"
+                />
+                <button
+                  type="button"
+                  onClick={loadLive}
+                  disabled={loading || !assetId.trim()}
+                  className="px-4 py-3 rounded-xl bg-sky-600 text-sm disabled:opacity-50"
+                >
+                  Load pack
+                </button>
+                <button
+                  type="button"
+                  onClick={loadProgress}
+                  disabled={loading}
+                  className="px-4 py-3 rounded-xl bg-violet-600 text-sm disabled:opacity-50"
+                >
+                  Poll unbox
+                </button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  value={owner}
+                  onChange={(e) => setOwner(e.target.value)}
+                  className="flex-1 bg-black/60 border border-white/10 px-4 py-3 rounded-xl font-mono text-sm"
+                  placeholder="owner account (schema packs)"
+                  aria-label="Owner account"
+                />
+                <button
+                  type="button"
+                  onClick={loadInventory}
+                  disabled={loading || !owner.trim()}
+                  className="px-4 py-3 rounded-xl bg-emerald-700 text-sm disabled:opacity-50"
+                >
+                  List packs
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                value={owner}
-                onChange={(e) => setOwner(e.target.value)}
-                className="flex-1 bg-black/60 border border-white/10 px-4 py-3 rounded-xl font-mono text-sm"
-                placeholder="owner account (schema packs)"
-                aria-label="Owner account"
-              />
-              <button
-                type="button"
-                onClick={loadInventory}
-                disabled={loading || !owner.trim()}
-                className="px-4 py-3 rounded-xl bg-emerald-700 text-sm disabled:opacity-50"
+            {error && (
+              <div
+                role="alert"
+                className="text-sm text-red-400 border border-red-500/30 rounded-xl p-3"
               >
-                List packs
-              </button>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div role="alert" className="text-sm text-red-400 border border-red-500/30 rounded-xl p-3">
-            {error}
-          </div>
-        )}
-        {meta && <p className="text-xs opacity-50 break-all">{meta}</p>}
-        {claimNote && (
-          <p className="text-xs text-emerald-300 break-all" role="status">
-            {claimNote}
-          </p>
-        )}
-
-        {mode === 'live' && inventory.length > 0 && (
-          <section className="border border-white/10 rounded-2xl p-4 space-y-2">
-            <h2 className="text-sm font-semibold text-emerald-400/90">Owner inventory</h2>
-            <ul className="space-y-2 text-sm">
-              {inventory.map((p) => (
-                <li key={p.assetId}>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 rounded-xl border border-white/10 hover:border-emerald-500/40 font-mono text-xs"
-                    onClick={() => applyPack(p)}
-                  >
-                    <span className="text-emerald-400">{p.assetId}</span> · {p.name}
-                    <span className="block opacity-60">
-                      stack: {p.stack.stackId} ({p.stack.confidence})
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {mode === 'live' && (
-          <UnboxTransferPanel
-            packAssetId={assetId}
-            session={session}
-            onSession={(s) => setSession(s)}
-            onSuccess={(txId) => {
-              setClaimNote(
-                txId
-                  ? `unbox transfer · ${txId} — wait for RNG then Poll unbox`
-                  : 'unbox transfer ok — Poll unbox for origin_roll_ids'
-              );
-              window.setTimeout(() => {
-                void loadProgress();
-              }, 2500);
-            }}
-          />
-        )}
-
-        {progress && (
-          <section
-            className="border border-violet-500/30 bg-violet-500/10 rounded-2xl p-4 space-y-2"
-            aria-live="polite"
-          >
-            <h2 className="text-sm font-semibold text-violet-200">Atomic unbox progress</h2>
-            <p className="text-xs font-mono">status: {progress.status}</p>
-            {progress.packRow && (
-              <p className="text-xs opacity-70">
-                unboxer {progress.packRow.unboxer} · pack_id {progress.packRow.packId}
+                {error}
+              </div>
+            )}
+            {meta && <p className="text-xs opacity-50 break-all">{meta}</p>}
+            {claimNote && (
+              <p className="text-xs text-emerald-300 break-all" role="status">
+                {claimNote}
               </p>
             )}
-            <ul className="text-xs font-mono space-y-1">
-              {progress.rolls.map((r) => (
-                <li key={r.originRollId}>
-                  roll {r.originRollId} → template {r.templateId}
-                </li>
-              ))}
-              {progress.rolls.length === 0 && (
-                <li className="opacity-50">No unboxassets rows yet</li>
-              )}
-            </ul>
-            <p className="text-[11px] opacity-60">{progress.note}</p>
-          </section>
+
+            {inventory.length > 0 && (
+              <section className="border border-white/10 rounded-2xl p-4 space-y-2">
+                <h2 className="text-sm font-semibold text-emerald-400/90">
+                  Owner inventory
+                </h2>
+                <ul className="space-y-2 text-sm">
+                  {inventory.map((p) => (
+                    <li key={p.assetId}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 rounded-xl border border-white/10 hover:border-emerald-500/40 font-mono text-xs"
+                        onClick={() => applyPack(p)}
+                      >
+                        <span className="text-emerald-400">{p.assetId}</span> ·{" "}
+                        {p.name}
+                        <span className="block opacity-60">
+                          stack: {p.stack.stackId} ({p.stack.confidence})
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <UnboxTransferPanel
+              packAssetId={assetId}
+              session={session}
+              onSession={(s) => setSession(s)}
+              onPackAssetIdChange={setAssetId}
+              onSuccess={(txId) => {
+                setClaimNote(
+                  txId
+                    ? `Step 1 done · ${txId} — wait for RNG, then Poll unbox`
+                    : 'Step 1 done — Poll unbox for origin_roll_ids'
+                );
+                window.setTimeout(() => {
+                  void loadProgress();
+                }, 2500);
+              }}
+            />
+
+            {progress && (
+              <section
+                className="border border-violet-500/30 bg-violet-500/10 rounded-2xl p-4 space-y-2"
+                aria-live="polite"
+              >
+                <h2 className="text-sm font-semibold text-violet-200 flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-black">
+                    ↻
+                  </span>
+                  Unbox progress (poll)
+                </h2>
+                <p className="text-xs font-mono">status: {progress.status}</p>
+                {progress.packRow && (
+                  <p className="text-xs opacity-70">
+                    unboxer {progress.packRow.unboxer} · pack_id{" "}
+                    {progress.packRow.packId}
+                  </p>
+                )}
+                <ul className="text-xs font-mono space-y-1">
+                  {progress.rolls.map((r) => (
+                    <li key={r.originRollId}>
+                      roll {r.originRollId} → template {r.templateId}
+                    </li>
+                  ))}
+                  {progress.rolls.length === 0 && (
+                    <li className="opacity-50">No unboxassets rows yet</li>
+                  )}
+                </ul>
+                <p className="text-[11px] opacity-60">{progress.note}</p>
+              </section>
+            )}
+
+            <ClaimUnboxedPanel
+              packAssetId={progress?.packAssetId || assetId}
+              originRollIds={progress?.claimableRollIds}
+              session={session}
+              onSession={(s) => setSession(s)}
+              onSuccess={(txId) => {
+                setClaimNote(
+                  txId
+                    ? `Step 2 done · ${txId} — re-poll to confirm rows cleared`
+                    : 'Step 2 returned — re-poll unbox'
+                );
+                void loadProgress();
+              }}
+            />
+
+            {pack && (
+              <section className="text-xs opacity-70 space-y-1 font-mono">
+                <p>collection: {pack.collection ?? '—'}</p>
+                <p>schema: {pack.schema ?? '—'}</p>
+                <p>
+                  stack: {pack.stack.stackId} ({pack.stack.confidence})
+                </p>
+              </section>
+            )}
+          </>
         )}
 
-        {(mode === 'live' || progress) && (
-          <ClaimUnboxedPanel
-            packAssetId={progress?.packAssetId || assetId}
-            originRollIds={progress?.claimableRollIds}
-            onSuccess={(txId) => {
-              setClaimNote(
-                txId
-                  ? `claimunboxed · ${txId} — re-poll to confirm rows cleared`
-                  : 'claimunboxed returned — re-poll unbox'
-              );
-              void loadProgress();
-            }}
-          />
+        {mode === 'demo' && error && (
+          <div
+            role="alert"
+            className="text-sm text-red-400 border border-red-500/30 rounded-xl p-3"
+          >
+            {error}
+          </div>
         )}
 
         <section className="border border-white/10 bg-black/40 rounded-2xl p-6 space-y-4">
@@ -338,16 +402,6 @@ export default function DropsAndPackPage() {
           </section>
         )}
 
-        {mode === 'live' && pack && (
-          <section className="text-xs opacity-70 space-y-1 font-mono">
-            <p>collection: {pack.collection ?? '—'}</p>
-            <p>schema: {pack.schema ?? '—'}</p>
-            <p>
-              stack: {pack.stack.stackId} ({pack.stack.confidence})
-            </p>
-          </section>
-        )}
-
         <section className="border border-white/10 bg-black/40 rounded-2xl p-4 space-y-3">
           <h2 className="text-sm font-semibold tracking-wide">Platform claim preset</h2>
           <select
@@ -377,8 +431,8 @@ export default function DropsAndPackPage() {
         />
 
         <p className="text-xs opacity-50">
-          <code className="text-emerald-400/80">unboxTransferWithSession</code> ·{' '}
-          <code className="text-emerald-400/80">claimUnboxedWithSession</code>
+          <code className="text-emerald-400/80">UnboxTransferPanel</code> ·{' '}
+          <code className="text-emerald-400/80">ClaimUnboxedPanel</code>
         </p>
 
         <p className="text-[10px] opacity-40">
