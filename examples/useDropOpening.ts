@@ -1,28 +1,26 @@
-import { useState, useCallback } from 'react';
-import type { Session } from '@wharfkit/session';
+import { useState, useCallback } from "react";
+import { claimUnboxedWithSession } from "./wharf/claimUnboxed";
+import type { SessionLike } from "./wharf/types";
 
 interface DropResult {
   id: string;
   claimed?: boolean;
-  [key: string]: any;
+  packAssetId?: string;
+  originRollIds?: number[];
+  [key: string]: unknown;
 }
 
 interface UseDropOpeningOptions {
-  session: Session | null;
-  onSuccess?: (result: any) => void;
-  onError?: (error: any) => void;
+  session: SessionLike | null;
+  onSuccess?: (result: unknown) => void;
+  onError?: (error: unknown) => void;
 }
 
-/**
- * Custom hook for managing the full drop/pack opening flow.
- * 
- * Features:
- * - Manages revealing + claiming state
- * - Optimistic UI updates with rollback
- * - Clean error handling
- * - Easy to integrate with any UI
- */
-export function useDropOpening({ session, onSuccess, onError }: UseDropOpeningOptions) {
+export function useDropOpening({
+  session,
+  onSuccess,
+  onError,
+}: UseDropOpeningOptions) {
   const [isRevealing, setIsRevealing] = useState(false);
   const [result, setResult] = useState<DropResult | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
@@ -39,36 +37,29 @@ export function useDropOpening({ session, onSuccess, onError }: UseDropOpeningOp
   }, []);
 
   const claim = useCallback(async () => {
-    if (!session || !result) return;
+    if (!session || !result?.packAssetId || !result.originRollIds?.length) {
+      setError("Session and pack_asset_id + origin_roll_ids required");
+      return;
+    }
 
     setIsClaiming(true);
     setError(null);
-
-    // Optimistic update
-    const optimisticResult = { ...result, claimed: true };
-    setResult(optimisticResult);
+    const previous = result;
+    setResult({ ...result, claimed: true });
 
     try {
-      const tx = await session.transact({
-        actions: [
-          {
-            account: 'atomicassets',
-            name: 'claimdrop',
-            data: {
-              // Add claim parameters here
-            },
-          },
-        ],
+      const tx = await claimUnboxedWithSession(session, {
+        packAssetId: result.packAssetId,
+        originRollIds: result.originRollIds,
       });
-
-      if (onSuccess) onSuccess(tx);
+      onSuccess?.(tx);
       return tx;
-    } catch (err: any) {
-      // Rollback on failure
-      setResult(result);
-      const message = err?.message || 'Failed to claim drop';
+    } catch (err: unknown) {
+      setResult(previous);
+      const message =
+        err instanceof Error ? err.message : "Failed to claimunboxed";
       setError(message);
-      if (onError) onError(err);
+      onError?.(err);
       throw err;
     } finally {
       setIsClaiming(false);
