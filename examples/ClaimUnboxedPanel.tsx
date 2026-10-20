@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import {
   buildClaimUnboxedAction,
   claimUnboxedWithSession,
@@ -10,43 +10,48 @@ import {
   createDryRunSession,
   createSessionKit,
 } from "./wharf/sessionFactory";
-import type { SessionLike } from "./wharf/types";
+import { actorString, type SessionLike } from "./wharf/types";
 
 export interface ClaimUnboxedPanelProps {
   packAssetId?: string;
   originRollIds?: number[];
   className?: string;
+  session?: SessionLike | null;
+  onSession?: (session: SessionLike, mode: "dry-run" | "wallet") => void;
   onSuccess?: (txId?: string) => void;
 }
 
-/**
- * Confirm-first AtomicPacks claimunboxed.
- * Default path uses dry-run session; "Connect wallet" tries real SessionKit.
- */
+/** Step 2: atomicpacksx::claimunboxed after unboxassets are ready. */
 export function ClaimUnboxedPanel({
   packAssetId: initialPackId = "",
   originRollIds: initialRolls = [],
   className = "",
+  session: externalSession = null,
+  onSession,
   onSuccess,
 }: ClaimUnboxedPanelProps) {
   const headingId = useId();
   const [packAssetId, setPackAssetId] = useState(initialPackId);
   const [rollsText, setRollsText] = useState(
-    initialRolls.length ? initialRolls.join(", ") : "0"
+    initialRolls.length ? initialRolls.join(", ") : ""
   );
-  const [session, setSession] = useState<SessionLike | null>(null);
+  const [session, setSession] = useState<SessionLike | null>(externalSession);
   const [mode, setMode] = useState<"dry-run" | "wallet">("dry-run");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Sync when parent polls new progress
-  const syncedPack =
-    initialPackId && initialPackId !== packAssetId ? initialPackId : packAssetId;
-  const syncedRolls =
-    initialRolls.length > 0
-      ? initialRolls.join(", ")
-      : rollsText;
+  useEffect(() => {
+    if (initialPackId) setPackAssetId(initialPackId);
+  }, [initialPackId]);
+
+  useEffect(() => {
+    if (initialRolls.length > 0) setRollsText(initialRolls.join(", "));
+  }, [initialRolls]);
+
+  useEffect(() => {
+    if (externalSession) setSession(externalSession);
+  }, [externalSession]);
 
   const parseRolls = (text: string): number[] =>
     text
@@ -56,39 +61,43 @@ export function ClaimUnboxedPanel({
       .map((s) => Number(s))
       .filter((n) => Number.isFinite(n));
 
+  const setActiveSession = useCallback(
+    (s: SessionLike, m: "dry-run" | "wallet") => {
+      setSession(s);
+      setMode(m);
+      onSession?.(s, m);
+    },
+    [onSession]
+  );
+
   const connectWallet = useCallback(async () => {
     setBusy(true);
     setError(null);
     setStatus(null);
     try {
-      const kit = await createSessionKit({
-        appName: "Pixel Journey Packs",
-      });
+      const kit = await createSessionKit({ appName: "Pixel Journey Packs" });
       const { session: s } = await kit.login();
-      setSession(s);
-      setMode("wallet");
-      setStatus(`Connected as ${typeof s.actor === "string" ? s.actor : s.actor.toString()}`);
+      setActiveSession(s, "wallet");
+      setStatus(`Connected as ${actorString(s)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Wallet connect failed");
       setMode("dry-run");
-      setSession(null);
     } finally {
       setBusy(false);
     }
-  }, []);
+  }, [setActiveSession]);
 
   const useDryRun = useCallback(() => {
-    setSession(createDryRunSession());
-    setMode("dry-run");
+    setActiveSession(createDryRunSession(), "dry-run");
     setStatus("Dry-run session active (no broadcast)");
     setError(null);
-  }, []);
+  }, [setActiveSession]);
 
   const submit = useCallback(async () => {
-    const packId = (initialPackId || packAssetId).trim();
-    const rolls = parseRolls(initialRolls.length ? initialRolls.join(",") : rollsText);
+    const packId = packAssetId.trim();
+    const rolls = parseRolls(rollsText);
     if (!packId || rolls.length === 0) {
-      setError("pack_asset_id and origin_roll_ids required");
+      setError("pack_asset_id and origin_roll_ids required — poll unbox first");
       return;
     }
 
@@ -106,7 +115,6 @@ export function ClaimUnboxedPanel({
     setError(null);
     setStatus(null);
     try {
-      // Validate shape before transact
       buildClaimUnboxedAction({ packAssetId: packId, originRollIds: rolls });
       const result = await claimUnboxedWithSession(active, {
         packAssetId: packId,
@@ -122,19 +130,28 @@ export function ClaimUnboxedPanel({
     } finally {
       setBusy(false);
     }
-  }, [initialPackId, packAssetId, initialRolls, rollsText, session, mode, onSuccess]);
+  }, [packAssetId, rollsText, session, mode, onSuccess]);
 
   return (
     <section
-      className={`rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 space-y-3 ${className}`}
+      className={`rounded-2xl border border-emerald-500/40 bg-gradient-to-b from-emerald-500/15 to-black/40 p-6 space-y-4 ${className}`}
       aria-labelledby={headingId}
     >
-      <h3 id={headingId} className="font-semibold text-lg text-emerald-100">
-        Atomic claimunboxed (WharfKit)
-      </h3>
-      <p className="text-sm text-emerald-100/80 leading-relaxed">
-        Builds <code className="text-emerald-200">atomicpacksx::claimunboxed</code> after you
-        confirm. Prefer polling unboxassets first so roll ids match chain state.
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-black">
+          2
+        </span>
+        <h3 id={headingId} className="font-semibold text-lg text-emerald-100">
+          Claim unboxed
+        </h3>
+      </div>
+
+      <p className="text-sm text-emerald-100/85 leading-relaxed">
+        After Step 1 and RNG settle, claim outcomes with{" "}
+        <code className="rounded bg-black/40 px-1.5 py-0.5 text-emerald-200">
+          atomicpacksx::claimunboxed
+        </code>
+        . Roll ids come from the unboxassets table.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -142,7 +159,7 @@ export function ClaimUnboxedPanel({
           type="button"
           onClick={useDryRun}
           disabled={busy}
-          className="px-3 py-2 rounded-lg text-sm bg-white/10 hover:bg-white/15 disabled:opacity-50"
+          className="px-3 py-2 rounded-lg text-sm bg-white/10 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
         >
           Use dry-run session
         </button>
@@ -150,45 +167,48 @@ export function ClaimUnboxedPanel({
           type="button"
           onClick={connectWallet}
           disabled={busy}
-          className="px-3 py-2 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50"
+          className="px-3 py-2 rounded-lg text-sm bg-emerald-600 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
         >
-          {busy ? "Working…" : "Connect wallet (WharfKit)"}
+          {busy ? "Working…" : "Connect wallet"}
         </button>
       </div>
 
-      <label className="block text-xs opacity-70" htmlFor="cu-pack">
-        pack_asset_id
-      </label>
-      <input
-        id="cu-pack"
-        value={initialPackId || packAssetId}
-        onChange={(e) => setPackAssetId(e.target.value)}
-        className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm font-mono"
-        placeholder="from unbox transfer"
-      />
+      <div>
+        <label className="block text-xs opacity-70 mb-1" htmlFor="cu-pack">
+          pack_asset_id
+        </label>
+        <input
+          id="cu-pack"
+          value={packAssetId}
+          onChange={(e) => setPackAssetId(e.target.value)}
+          className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          placeholder="same id used in Step 1"
+        />
+      </div>
 
-      <label className="block text-xs opacity-70" htmlFor="cu-rolls">
-        origin_roll_ids
-      </label>
-      <input
-        id="cu-rolls"
-        value={initialRolls.length ? initialRolls.join(", ") : rollsText}
-        onChange={(e) => setRollsText(e.target.value)}
-        className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm font-mono"
-        placeholder="0, 1, 2"
-      />
+      <div>
+        <label className="block text-xs opacity-70 mb-1" htmlFor="cu-rolls">
+          origin_roll_ids
+        </label>
+        <input
+          id="cu-rolls"
+          value={rollsText}
+          onChange={(e) => setRollsText(e.target.value)}
+          className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          placeholder="0, 1, 2 — from Poll unbox"
+        />
+      </div>
 
       <p className="text-[11px] opacity-50 font-mono">
-        mode: {mode}
-        {syncedPack ? ` · pack ${syncedPack}` : ""}
-        {syncedRolls ? ` · rolls ${syncedRolls}` : ""}
+        session: {mode}
+        {session ? ` · ${actorString(session)}` : ""}
       </p>
 
       <button
         type="button"
         onClick={submit}
         disabled={busy}
-        className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium disabled:opacity-50"
+        className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-3.5 text-sm font-semibold disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
       >
         Confirm & claimunboxed
       </button>
