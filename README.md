@@ -2,82 +2,51 @@
 
 > **Trust Label:** `educational-reference`  
 > **Verification:** [VERIFICATION-LOG.md](VERIFICATION-LOG.md)  
-> **Status:** 🔄 Phase 2 · Pass 1 (pure odds engines + live pack parse)  
+> **Status:** 🔄 Phase 2 · Platform contracts documented (Atomic / Nefty / NFTHive)  
 > **Category:** Atomic Ecosystem – Drops & Pack Openings  
 > **Parent Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
 > **Continuity:** [ECOSYSTEM-RESILIENCE.md](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog/blob/main/ECOSYSTEM-RESILIENCE.md) · PX §11
 
-**Goal:** Reference-quality **drop and pack opening UX** on WAX — transparent probabilities, accessible reveals, safe claim flows — plus a **calm recovery path** when a commercial frontend is offline.
+**Goal:** Transparent pack/drop UX **plus** accurate on-chain recipes for the major WAX pack stacks — with clear **forward vs recovery** trust labels.
 
 ---
 
-## Two modes (do not mix them up)
+## Platform map (today)
 
-| Mode | Trust | Intent |
-|------|--------|--------|
-| **Product experience** | `recommended-for-new-value` when you control the contract | Joyful, fair opens for *your* drops/packs |
-| **Recovery** | `recovery` / `avoid-new-value` for legacy platforms | Claim/unpack when a vendor UI is gone |
+| Stack | Packs | Drops | New value? |
+|-------|-------|-------|------------|
+| **Atomic** | `atomicpacksx` | `atomicdropsx` | **Preferred** for new launches |
+| **NeftyBlocks-class** | `neftyblocksp` | `neftyblocksd` | **Recovery only** — avoid new deposits |
+| **NFTHive-class** | `nfthivepacks` | `nfthivedrops` | **Recovery only** — avoid new deposits |
+
+Full action/table differences: **[PLATFORM-CONTRACTS.md](./PLATFORM-CONTRACTS.md)**  
+Copy-paste recipes: **[ACTION-RECIPES.md](./ACTION-RECIPES.md)**
+
+Atomic open is **two-step** (`transfer` + memo `unbox` → `claimunboxed` + roll ids). Nefty/Hive use **different claim action names and fields** — do not mix them.
 
 ---
 
 ## Quick start
 
 ```bash
-npm install
-npm test
-npm run typecheck
-npm run dev
+npm install && npm test && npm run dev
 ```
 
 ```ts
-import { normalizeOdds, parseContentsOdds, rollFromOdds, demoOdds } from "./examples/engines";
-import { fetchPackSummary } from "./examples/live/atomicassets";
-
-const odds = parseContentsOdds("65% Common - 20% Uncommon - 8% Rare");
-const { items } = normalizeOdds(odds);
-const { item } = rollFromOdds(items, 0.7); // educational client RNG only
-
-const live = await fetchPackSummary("1100003609672");
+import { PLATFORM_PRESETS } from "./examples/platformPresets";
+import { parseContentsOdds, normalizeOdds } from "./examples/engines";
 ```
 
----
-
-## Pure engines
-
-| Function | Role |
-|----------|------|
-| `normalizeOdds` | Renormalize tables that do not sum to 1 |
-| `parseContentsOdds` | Parse human "65% Common" contents strings |
-| `rollFromOdds` | Deterministic pick from cumulative odds |
-
-**Honesty:** Parsed pack contents and client rolls are **display/education**. On-chain pack RNG and contract logic may differ.
-
----
-
-## Examples
-
-- `engines.ts` / `engines.test.ts` — pure probability
-- `live/atomicassets.ts` — pack asset summary + owner packs query
-- `RevealAnimation.tsx`, `ProbabilityBreakdown.tsx`, `ClaimFlow.tsx`
-- `RecoveryClaimPanel.tsx` — offline-frontend recovery UX (no auto-broadcast)
-- `ACTION-RECIPES.md` — recovery documentation
-- `app/page.tsx` — Demo open + live pack load + recovery panel
+UI: demo odds · live pack parse · **platform preset selector** (Atomic / Nefty / Hive) · recovery claim panel.
 
 ---
 
 ## Learning outcomes
 
-- Ship fair probability UX (visual + text)
-- Parse and normalize imperfect marketing odds strings
-- Separate product claim flows from **recovery** paths
-- Never invent third-party contract accounts — verify on explorer
-
----
-
-## Best practices
-
-**Do:** show odds, respect `prefers-reduced-motion`, confirm before sign, document ABI in git for critical claims.  
-**Don’t:** hide odds, treat a vendor domain as permanent infrastructure, encourage new deposits into unmaintained shared pack platforms.
+- Prefer Atomic-standard contracts for **new** packs/drops
+- Document Nefty/Hive only as **recovery** paths when UI is gone
+- Detect stack via transfer history + ABI, not marketplace branding alone
+- Show odds honestly; client RNG ≠ on-chain RNG
 
 ---
 
@@ -85,7 +54,6 @@ const live = await fetchPackSummary("1100003609672");
 
 - `wax-neftyblocks-RAM-sweeper`
 - `wax-seizure-safe-pack-opening-canvas`
-- `wax-pity-system-and-guaranteed-rewards`
 - `wax-screen-reader-accessible-inventory`
 
 ## License
