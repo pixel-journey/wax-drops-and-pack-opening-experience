@@ -15,6 +15,10 @@ import {
   fetchPackSummary,
   type PackAssetSummary,
 } from '../examples/live/atomicassets';
+import {
+  PLATFORM_PRESETS,
+  type PlatformClaimPreset,
+} from '../examples/platformPresets';
 
 type Mode = 'demo' | 'live';
 
@@ -27,6 +31,10 @@ export default function DropsAndPackPage() {
   const [meta, setMeta] = useState<string | null>(null);
   const [revealing, setRevealing] = useState(false);
   const [rolled, setRolled] = useState<string | null>(null);
+  const [presetId, setPresetId] = useState('atomic-packs');
+
+  const preset: PlatformClaimPreset =
+    PLATFORM_PRESETS.find((p) => p.id === presetId) ?? PLATFORM_PRESETS[0];
 
   const odds = useMemo(() => {
     if (mode === 'live' && pack?.odds.length) return pack.odds;
@@ -66,6 +74,11 @@ export default function DropsAndPackPage() {
     }, 900);
   };
 
+  const trustColor =
+    preset.trust === 'recommended-for-new-value'
+      ? 'text-emerald-400'
+      : 'text-amber-300';
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -74,7 +87,7 @@ export default function DropsAndPackPage() {
             DROPS & PACK OPENING
           </h1>
           <p className="text-xs opacity-60 mt-1">
-            Pixel Journey · Transparent odds · Recovery-aware claims
+            Pixel Journey · Atomic forward path · Nefty/Hive recovery recipes
           </p>
         </header>
 
@@ -122,8 +135,7 @@ export default function DropsAndPackPage() {
               </button>
             </div>
             <p className="text-[11px] opacity-50">
-              Prefill smoke id has a human contents odds string. Parsed odds are for
-              display education — on-chain RNG may differ.
+              Detect stack via transfer history + authorized_accounts — see PLATFORM-CONTRACTS.md.
             </p>
           </div>
         )}
@@ -139,13 +151,7 @@ export default function DropsAndPackPage() {
           <h2 className="text-sm font-semibold text-emerald-400/90 tracking-wide">
             Probability breakdown
           </h2>
-          <ProbabilityBreakdown
-            items={normalized.items}
-            showExpectedValue
-          />
-          {normalized.wasRenormalized && (
-            <p className="text-xs text-amber-300/80">{normalized.methodologyNote}</p>
-          )}
+          <ProbabilityBreakdown items={normalized.items} showExpectedValue />
           <p className="text-[11px] opacity-50">{normalized.methodologyNote}</p>
         </section>
 
@@ -169,9 +175,6 @@ export default function DropsAndPackPage() {
                 You rolled: <strong className="text-emerald-400">{rolled}</strong>
               </p>
             )}
-            <p className="text-[11px] opacity-50 text-center">
-              Demo roll is local educational RNG — not on-chain randomness.
-            </p>
           </section>
         )}
 
@@ -180,28 +183,47 @@ export default function DropsAndPackPage() {
             <p>collection: {pack.collection ?? '—'}</p>
             <p>schema: {pack.schema ?? '—'}</p>
             <p>authorized_accounts: {pack.authorizedAccounts.join(', ') || '—'}</p>
-            <p className="text-amber-200/70">{pack.recoveryHints.note}</p>
           </section>
         )}
 
+        <section className="border border-white/10 bg-black/40 rounded-2xl p-4 space-y-3">
+          <h2 className="text-sm font-semibold tracking-wide">Platform claim preset</h2>
+          <label className="block text-xs opacity-70" htmlFor="preset">
+            Contract stack
+          </label>
+          <select
+            id="preset"
+            value={preset.id}
+            onChange={(e) => setPresetId(e.target.value)}
+            className="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-sm"
+          >
+            {PLATFORM_PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          <p className={`text-xs font-mono ${trustColor}`}>trust: {preset.trust}</p>
+          <p className="text-xs opacity-60">{preset.openHint}</p>
+        </section>
+
         <RecoveryClaimPanel
-          contractAccount="VERIFY_ON_EXPLORER"
-          actionName="unpack | claim (ABI)"
-          fieldHints={['asset_ids', 'owner']}
+          contractAccount={preset.contractAccount}
+          actionName={preset.actionName}
+          fieldHints={preset.fieldHints}
           onPrepareClaim={(payload) => {
-            console.info('Recovery prepare (educational):', payload);
+            console.info('Claim prepare (educational):', payload, preset.trust);
           }}
         />
 
         <p className="text-xs opacity-50">
-          Pure: <code className="text-emerald-400/80">normalizeOdds</code>,{' '}
-          <code className="text-emerald-400/80">parseContentsOdds</code>,{' '}
-          <code className="text-emerald-400/80">rollFromOdds</code>. See ACTION-RECIPES.md
-          and catalog ECOSYSTEM-RESILIENCE.
+          See <code className="text-emerald-400/80">PLATFORM-CONTRACTS.md</code> and{' '}
+          <code className="text-emerald-400/80">ACTION-RECIPES.md</code>. Prefer Atomic for new
+          value; Nefty/Hive presets are recovery-oriented.
         </p>
 
         <p className="text-[10px] opacity-40">
-          Sample odds row: {normalized.items[0]?.name}{' '}
+          Sample odds: {normalized.items[0]?.name}{' '}
           {formatChancePct(normalized.items[0]?.chance ?? 0)}
         </p>
       </div>
