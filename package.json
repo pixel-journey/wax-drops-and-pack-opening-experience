@@ -1,6 +1,6 @@
 {
   "name": "wax-drops-and-pack-opening-experience",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -18,5 +18,17 @@
     "@types/react": "^18",
     "@types/node": "^20",
     "vitest": "^2"
+  },
+  "peerDependencies": {
+    "@wharfkit/session": ">=1.0.0",
+    "@wharfkit/web-renderer": ">=1.0.0",
+    "@wharfkit/wallet-plugin-anchor": ">=1.0.0",
+    "@wharfkit/wallet-plugin-cloudwallet": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@wharfkit/session": { "optional": true },
+    "@wharfkit/web-renderer": { "optional": true },
+    "@wharfkit/wallet-plugin-anchor": { "optional": true },
+    "@wharfkit/wallet-plugin-cloudwallet": { "optional": true }
   }
 }
