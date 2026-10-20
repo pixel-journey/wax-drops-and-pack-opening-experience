@@ -4,12 +4,16 @@
  */
 
 import { parseContentsOdds } from "../engines";
+import { suggestStackFromAccounts, type StackSuggestion } from "../stackDetect";
 import type { ProbabilityItem } from "../types";
 
 export const DEFAULT_ATOMIC = "https://wax.api.atomicassets.io";
 
 /** Smoke-tested 2026-10-20: schema packs, contents odds string. */
 export const SMOKE_PACK_ASSET_ID = "1100003609672";
+
+/** Pending Atomic unbox sample (may clear when claimed). */
+export const SMOKE_PENDING_UNBOX_ID = "1100003553120";
 
 export interface PackAssetSummary {
   assetId: string;
@@ -20,7 +24,8 @@ export interface PackAssetSummary {
   contentsText?: string;
   odds: ProbabilityItem[];
   authorizedAccounts: string[];
-  /** Hints only — VERIFY on explorer before recovery claim */
+  notifyAccounts: string[];
+  stack: StackSuggestion;
   recoveryHints: {
     trustLabel: "recovery" | "avoid-new-value";
     note: string;
@@ -35,6 +40,7 @@ interface RawAsset {
   collection?: {
     collection_name?: string;
     authorized_accounts?: string[];
+    notify_accounts?: string[];
   };
   schema?: { schema_name?: string };
 }
@@ -56,6 +62,11 @@ export function rawAssetToPackSummary(a: RawAsset): PackAssetSummary {
   const contentsText = pickContents(a);
   const odds = contentsText ? parseContentsOdds(contentsText) : [];
   const authorizedAccounts = a.collection?.authorized_accounts ?? [];
+  const notifyAccounts = a.collection?.notify_accounts ?? [];
+  const stack = suggestStackFromAccounts([
+    ...authorizedAccounts,
+    ...notifyAccounts,
+  ]);
   return {
     assetId: String(a.asset_id ?? ""),
     name: pickName(a),
@@ -65,10 +76,11 @@ export function rawAssetToPackSummary(a: RawAsset): PackAssetSummary {
     contentsText,
     odds,
     authorizedAccounts,
+    notifyAccounts,
+    stack,
     recoveryHints: {
       trustLabel: "recovery",
-      note:
-        "If a vendor pack UI is offline, verify the pack interaction contract on explorer (often among collection authorized_accounts such as atomicpacksx-class). Do not treat this list as a claim ABI.",
+      note: stack.note,
     },
   };
 }
@@ -98,7 +110,6 @@ export async function fetchPackSummary(
   return { pack: rawAssetToPackSummary(asset), source };
 }
 
-/** List assets for an owner filtered by schema_name=packs when possible. */
 export async function fetchOwnerPacks(
   owner: string,
   options: {
