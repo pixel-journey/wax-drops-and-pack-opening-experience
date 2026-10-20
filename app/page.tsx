@@ -5,6 +5,7 @@ import { ClaimUnboxedPanel } from '../examples/ClaimUnboxedPanel';
 import { ProbabilityBreakdown } from '../examples/ProbabilityBreakdown';
 import { RecoveryClaimPanel } from '../examples/RecoveryClaimPanel';
 import { RevealAnimation } from '../examples/RevealAnimation';
+import { UnboxTransferPanel } from '../examples/UnboxTransferPanel';
 import {
   demoOdds,
   formatChancePct,
@@ -26,6 +27,7 @@ import {
   PLATFORM_PRESETS,
   type PlatformClaimPreset,
 } from '../examples/platformPresets';
+import type { SessionLike } from '../examples/wharf/types';
 
 type Mode = 'demo' | 'live';
 
@@ -43,6 +45,7 @@ export default function DropsAndPackPage() {
   const [rolled, setRolled] = useState<string | null>(null);
   const [presetId, setPresetId] = useState('atomic-packs');
   const [claimNote, setClaimNote] = useState<string | null>(null);
+  const [session, setSession] = useState<SessionLike | null>(null);
 
   const preset: PlatformClaimPreset =
     PLATFORM_PRESETS.find((p) => p.id === presetId) ?? PLATFORM_PRESETS[0];
@@ -137,7 +140,7 @@ export default function DropsAndPackPage() {
             DROPS & PACK OPENING
           </h1>
           <p className="text-xs opacity-60 mt-1">
-            Unbox progress · claimunboxed (WharfKit) · inventory stack suggest
+            transfer+unbox → poll → claimunboxed (WharfKit)
           </p>
         </header>
 
@@ -208,10 +211,6 @@ export default function DropsAndPackPage() {
                 List packs
               </button>
             </div>
-
-            <p className="text-[11px] opacity-50">
-              Pending unbox smoke id: {SMOKE_PENDING_UNBOX_ID} (may clear when claimed).
-            </p>
           </div>
         )}
 
@@ -241,15 +240,30 @@ export default function DropsAndPackPage() {
                     <span className="text-emerald-400">{p.assetId}</span> · {p.name}
                     <span className="block opacity-60">
                       stack: {p.stack.stackId} ({p.stack.confidence})
-                      {p.stack.matchedAccounts.length
-                        ? ` · ${p.stack.matchedAccounts.join(', ')}`
-                        : ''}
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
           </section>
+        )}
+
+        {mode === 'live' && (
+          <UnboxTransferPanel
+            packAssetId={assetId}
+            session={session}
+            onSession={(s) => setSession(s)}
+            onSuccess={(txId) => {
+              setClaimNote(
+                txId
+                  ? `unbox transfer · ${txId} — wait for RNG then Poll unbox`
+                  : 'unbox transfer ok — Poll unbox for origin_roll_ids'
+              );
+              window.setTimeout(() => {
+                void loadProgress();
+              }, 2500);
+            }}
+          />
         )}
 
         {progress && (
@@ -271,14 +285,9 @@ export default function DropsAndPackPage() {
                 </li>
               ))}
               {progress.rolls.length === 0 && (
-                <li className="opacity-50">No unboxassets rows</li>
+                <li className="opacity-50">No unboxassets rows yet</li>
               )}
             </ul>
-            {progress.claimableRollIds.length > 0 && (
-              <p className="text-xs text-violet-100">
-                claimunboxed origin_roll_ids: [{progress.claimableRollIds.join(', ')}]
-              </p>
-            )}
             <p className="text-[11px] opacity-60">{progress.note}</p>
           </section>
         )}
@@ -290,8 +299,8 @@ export default function DropsAndPackPage() {
             onSuccess={(txId) => {
               setClaimNote(
                 txId
-                  ? `claimunboxed submitted · ${txId} — re-poll unbox to confirm rows cleared`
-                  : 'claimunboxed returned without tx id — re-poll unbox'
+                  ? `claimunboxed · ${txId} — re-poll to confirm rows cleared`
+                  : 'claimunboxed returned — re-poll unbox'
               );
               void loadProgress();
             }}
@@ -334,9 +343,8 @@ export default function DropsAndPackPage() {
             <p>collection: {pack.collection ?? '—'}</p>
             <p>schema: {pack.schema ?? '—'}</p>
             <p>
-              stack: {pack.stack.stackId} ({pack.stack.confidence}) — {pack.stack.note}
+              stack: {pack.stack.stackId} ({pack.stack.confidence})
             </p>
-            <p>authorized: {pack.authorizedAccounts.join(', ') || '—'}</p>
           </section>
         )}
 
@@ -364,13 +372,13 @@ export default function DropsAndPackPage() {
           actionName={preset.actionName}
           fieldHints={preset.fieldHints}
           onPrepareClaim={(payload) => {
-            console.info('Claim prepare (educational):', payload, preset.trust, progress);
+            console.info('Claim prepare (educational):', payload, preset.trust);
           }}
         />
 
         <p className="text-xs opacity-50">
-          <code className="text-emerald-400/80">claimUnboxedWithSession</code> ·{' '}
-          <code className="text-emerald-400/80">fetchUnboxProgress</code> · PLATFORM-CONTRACTS.md
+          <code className="text-emerald-400/80">unboxTransferWithSession</code> ·{' '}
+          <code className="text-emerald-400/80">claimUnboxedWithSession</code>
         </p>
 
         <p className="text-[10px] opacity-40">
