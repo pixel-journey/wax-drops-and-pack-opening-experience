@@ -1,20 +1,21 @@
 # VERIFICATION-LOG — wax-drops-and-pack-opening-experience
 
-**Updated:** 2026-10-20 (transfer + memo unbox)
+**Trust label:** `educational-reference`  
+**Updated:** 2026-10-20 (cycle complete for Atomic open path)
 
 | Claim | Status | Evidence |
 |-------|--------|----------|
-| `buildUnboxTransferAction` → atomicpacksx memo unbox | **verified** (unit) | `wharf/unboxTransfer.test.ts` |
-| Rejects non-unbox memo for atomicpacksx | **verified** (unit) | same |
-| `buildClaimUnboxedAction` | **verified** (unit) | `wharf/claimUnboxed.test.ts` |
-| unboxassets poll | **verified** (smoke) | live table rows |
-| Live wallet broadcast | **untested** in CI | optional peers |
+| Odds / stack detect / unbox progress | **verified** | unit + live smoke |
+| transfer + memo unbox builder | **verified** (unit) | `unboxTransfer.test.ts` |
+| claimunboxed builder | **verified** (unit) | `claimUnboxed.test.ts` |
+| UnboxTransferPanel + ClaimUnboxedPanel UI | **partial** | app Live tools steps |
+| Live wallet broadcast | **untested** in CI | optional WharfKit peers |
 
-## Full path
+## Atomic path
 
-1. `unboxTransferWithSession` — `atomicassets::transfer`  
-2. `fetchUnboxProgress` — tables  
-3. `claimUnboxedWithSession` — `claimunboxed`
+1. `UnboxTransferPanel` → `atomicassets::transfer` memo `unbox`  
+2. `fetchUnboxProgress`  
+3. `ClaimUnboxedPanel` → `claimunboxed`
 
 ```bash
 npm test && npm run typecheck
