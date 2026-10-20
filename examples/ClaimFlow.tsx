@@ -1,73 +1,53 @@
-import type { Session } from '@wharfkit/session';
+import {
+  claimUnboxedWithSession,
+  type ClaimUnboxedParams,
+} from "./wharf/claimUnboxed";
+import type { SessionLike } from "./wharf/types";
 
 interface ClaimOptions {
-  session: Session;
-  dropResult: any;
-  updateUI: (result: any) => void;
-  onError: (error: any) => void;
-  onSuccess?: (result: any) => void;
+  session: SessionLike;
+  params: ClaimUnboxedParams;
+  updateUI?: (claimed: boolean) => void;
+  onError?: (error: unknown) => void;
+  onSuccess?: (result: { transactionId?: string; raw: unknown }) => void;
 }
 
 /**
- * Production-ready optimistic claiming flow with safe rollback.
- * 
- * Best practices included:
- * - Optimistic UI update for perceived performance
- * - Safe rollback on failure
- * - Clear error handling
- * - Type-safe with WharfKit
+ * Optimistic claimunboxed with rollback on failure.
  */
 export async function claimWithOptimisticUpdate({
   session,
-  dropResult,
+  params,
   updateUI,
   onError,
   onSuccess,
 }: ClaimOptions) {
-  // Optimistically update the UI immediately
-  const optimisticResult = { ...dropResult, claimed: true };
-  updateUI(optimisticResult);
-
+  updateUI?.(true);
   try {
-    const result = await session.transact({
-      actions: [
-        {
-          account: 'atomicassets',
-          name: 'claimdrop',
-          data: {
-            // Add your claim parameters here
-            // owner: session.actor,
-            // ... other data
-          },
-        },
-      ],
-    });
-
-    // Optional: Confirm final state from chain
-    if (onSuccess) {
-      onSuccess(result);
-    }
-
+    const result = await claimUnboxedWithSession(session, params);
+    onSuccess?.(result);
     return result;
   } catch (error) {
-    // Rollback optimistic update on failure
-    updateUI({ ...dropResult, claimed: false });
-    onError(error);
+    updateUI?.(false);
+    onError?.(error);
     throw error;
   }
 }
 
-/**
- * Example error handler with user-friendly messages
- */
-export function handleClaimError(error: any) {
-  if (error?.message?.includes('insufficient')) {
-    return 'Not enough resources to claim this drop. Please try again later.';
-  }
+export function handleClaimError(error: unknown): string {
+  const message =
+    error && typeof error === "object" && "message" in error
+      ? String((error as { message: unknown }).message)
+      : String(error);
 
-  if (error?.message?.includes('network') || error?.message?.includes('timeout')) {
-    return 'Network issue detected. Please check your connection and try again.';
+  if (/insufficient/i.test(message)) {
+    return "Not enough CPU/NET/RAM to claim. Try again or use a resource provider.";
   }
-
-  return 'Something went wrong while claiming. Please try again.';
+  if (/network|timeout/i.test(message)) {
+    return "Network issue. Check connection and retry.";
+  }
+  if (/WharfKit packages not available/i.test(message)) {
+    return message;
+  }
+  return message || "Claim failed. Verify pack_asset_id and origin_roll_ids on explorer.";
 }
