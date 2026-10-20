@@ -1,26 +1,24 @@
 # VERIFICATION-LOG — wax-drops-and-pack-opening-experience
 
 **Trust label:** `educational-reference`  
-**Updated:** 2026-10-20 (inventory + unbox progress)
+**Updated:** 2026-10-20 (WharfKit claimunboxed)
 
 | Claim | Status | Evidence |
 |-------|--------|----------|
 | Odds engines | **verified** (unit) | `engines.test.ts` |
-| Stack detect atomic/nefty/hive | **verified** (unit) | `stackDetect.test.ts` |
-| Live pack contents parse | **verified** (smoke) | `1100003609672` |
-| `unboxassets` schema + poll | **verified** (smoke) | scope `1100003553120` → rolls template_id 896941 |
-| `unboxpacks` rows exist | **verified** (smoke) | greymass get_table_rows |
-| Owner inventory list | **partial** | adapter + UI; needs manual owner with packs |
-| WharfKit claimunboxed broadcast | **untested** | |
+| Stack detect | **verified** (unit) | `stackDetect.test.ts` |
+| `buildClaimUnboxedAction` | **verified** (unit) | `wharf/claimUnboxed.test.ts` |
+| `claimUnboxedWithSession` mock transact | **verified** (unit) | same |
+| Live unboxassets poll | **verified** (smoke) | scope `1100003553120` |
+| Real wallet SessionKit login + broadcast | **untested** in CI | requires installed peers + Anchor/Cloud |
+| Dry-run session path | **partial** | `createDryRunSession` + panel UI |
 
-## Unbox progress smoke (2026-10-20)
+## Install peers for live wallet
 
 ```bash
-curl -sS https://wax.greymass.com/v1/chain/get_table_rows \
-  -d '{"code":"atomicpacksx","scope":"1100003553120","table":"unboxassets","limit":20,"json":true}'
+npm i @wharfkit/session @wharfkit/web-renderer \
+  @wharfkit/wallet-plugin-anchor @wharfkit/wallet-plugin-cloudwallet
 ```
-
-Observed rows: `origin_roll_id` + `template_id`. Pending packs clear after `claimunboxed`.
 
 ## How to re-run
 
