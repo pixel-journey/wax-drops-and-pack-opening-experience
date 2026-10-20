@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
+import { ClaimUnboxedPanel } from '../examples/ClaimUnboxedPanel';
 import { ProbabilityBreakdown } from '../examples/ProbabilityBreakdown';
 import { RecoveryClaimPanel } from '../examples/RecoveryClaimPanel';
 import { RevealAnimation } from '../examples/RevealAnimation';
@@ -41,6 +42,7 @@ export default function DropsAndPackPage() {
   const [revealing, setRevealing] = useState(false);
   const [rolled, setRolled] = useState<string | null>(null);
   const [presetId, setPresetId] = useState('atomic-packs');
+  const [claimNote, setClaimNote] = useState<string | null>(null);
 
   const preset: PlatformClaimPreset =
     PLATFORM_PRESETS.find((p) => p.id === presetId) ?? PLATFORM_PRESETS[0];
@@ -135,7 +137,7 @@ export default function DropsAndPackPage() {
             DROPS & PACK OPENING
           </h1>
           <p className="text-xs opacity-60 mt-1">
-            Inventory stack suggest · Atomic unbox progress · recovery presets
+            Unbox progress · claimunboxed (WharfKit) · inventory stack suggest
           </p>
         </header>
 
@@ -219,6 +221,11 @@ export default function DropsAndPackPage() {
           </div>
         )}
         {meta && <p className="text-xs opacity-50 break-all">{meta}</p>}
+        {claimNote && (
+          <p className="text-xs text-emerald-300 break-all" role="status">
+            {claimNote}
+          </p>
+        )}
 
         {mode === 'live' && inventory.length > 0 && (
           <section className="border border-white/10 rounded-2xl p-4 space-y-2">
@@ -274,6 +281,21 @@ export default function DropsAndPackPage() {
             )}
             <p className="text-[11px] opacity-60">{progress.note}</p>
           </section>
+        )}
+
+        {(mode === 'live' || progress) && (
+          <ClaimUnboxedPanel
+            packAssetId={progress?.packAssetId || assetId}
+            originRollIds={progress?.claimableRollIds}
+            onSuccess={(txId) => {
+              setClaimNote(
+                txId
+                  ? `claimunboxed submitted · ${txId} — re-poll unbox to confirm rows cleared`
+                  : 'claimunboxed returned without tx id — re-poll unbox'
+              );
+              void loadProgress();
+            }}
+          />
         )}
 
         <section className="border border-white/10 bg-black/40 rounded-2xl p-6 space-y-4">
@@ -347,9 +369,8 @@ export default function DropsAndPackPage() {
         />
 
         <p className="text-xs opacity-50">
-          <code className="text-emerald-400/80">fetchUnboxProgress</code> ·{' '}
-          <code className="text-emerald-400/80">suggestStackFromAccounts</code> ·{' '}
-          PLATFORM-CONTRACTS.md
+          <code className="text-emerald-400/80">claimUnboxedWithSession</code> ·{' '}
+          <code className="text-emerald-400/80">fetchUnboxProgress</code> · PLATFORM-CONTRACTS.md
         </p>
 
         <p className="text-[10px] opacity-40">
