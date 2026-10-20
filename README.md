@@ -2,60 +2,58 @@
 
 > **Trust Label:** `educational-reference`  
 > **Verification:** [VERIFICATION-LOG.md](VERIFICATION-LOG.md)  
-> **Status:** 🔄 Phase 2 · Platform contracts documented (Atomic / Nefty / NFTHive)  
-> **Category:** Atomic Ecosystem – Drops & Pack Openings  
-> **Parent Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
-> **Continuity:** [ECOSYSTEM-RESILIENCE.md](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog/blob/main/ECOSYSTEM-RESILIENCE.md) · PX §11
+> **Status:** Phase 2 · **WharfKit claimunboxed** + progress poll + stack detect  
+> **Parent Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)
 
-**Goal:** Transparent pack/drop UX **plus** accurate on-chain recipes for the major WAX pack stacks — with clear **forward vs recovery** trust labels.
+Transparent pack odds, Atomic unbox progress, and a **confirm-first** `atomicpacksx::claimunboxed` path (dry-run or real wallet).
 
----
+## Platform map
 
-## Platform map (today)
+| Stack | Packs | New value? |
+|-------|-------|------------|
+| Atomic `atomicpacksx` | `claimunboxed` | Preferred |
+| Nefty `neftyblocksp` | recovery | Avoid new deposits |
+| NFTHive `nfthivepacks` | recovery | Avoid new deposits |
 
-| Stack | Packs | Drops | New value? |
-|-------|-------|-------|------------|
-| **Atomic** | `atomicpacksx` | `atomicdropsx` | **Preferred** for new launches |
-| **NeftyBlocks-class** | `neftyblocksp` | `neftyblocksd` | **Recovery only** — avoid new deposits |
-| **NFTHive-class** | `nfthivepacks` | `nfthivedrops` | **Recovery only** — avoid new deposits |
-
-Full action/table differences: **[PLATFORM-CONTRACTS.md](./PLATFORM-CONTRACTS.md)**  
-Copy-paste recipes: **[ACTION-RECIPES.md](./ACTION-RECIPES.md)**
-
-Atomic open is **two-step** (`transfer` + memo `unbox` → `claimunboxed` + roll ids). Nefty/Hive use **different claim action names and fields** — do not mix them.
-
----
+See [PLATFORM-CONTRACTS.md](./PLATFORM-CONTRACTS.md).
 
 ## Quick start
 
 ```bash
-npm install && npm test && npm run dev
+npm install
+npm test
+npm run dev
 ```
+
+### Optional real wallet (WharfKit)
+
+```bash
+npm i @wharfkit/session @wharfkit/web-renderer \
+  @wharfkit/wallet-plugin-anchor @wharfkit/wallet-plugin-cloudwallet
+```
+
+Without those packages, **Use dry-run session** still builds and "signs" locally (no broadcast).
+
+## claimunboxed flow
+
+1. User transfers pack → `atomicpacksx` memo `unbox`
+2. **Poll unbox** → `unboxassets` / `unboxpacks`
+3. **ClaimUnboxedPanel** → confirm → `session.transact` with `claimunboxed`
 
 ```ts
-import { PLATFORM_PRESETS } from "./examples/platformPresets";
-import { parseContentsOdds, normalizeOdds } from "./examples/engines";
+import { buildClaimUnboxedAction, claimUnboxedWithSession } from "./examples/wharf/claimUnboxed";
+import { createDryRunSession } from "./examples/wharf/sessionFactory";
+
+const action = buildClaimUnboxedAction({
+  packAssetId: "1100003553120",
+  originRollIds: [0, 1],
+});
+await claimUnboxedWithSession(createDryRunSession("alice.wam"), {
+  packAssetId: "1100003553120",
+  originRollIds: [0, 1],
+});
 ```
-
-UI: demo odds · live pack parse · **platform preset selector** (Atomic / Nefty / Hive) · recovery claim panel.
-
----
-
-## Learning outcomes
-
-- Prefer Atomic-standard contracts for **new** packs/drops
-- Document Nefty/Hive only as **recovery** paths when UI is gone
-- Detect stack via transfer history + ABI, not marketplace branding alone
-- Show odds honestly; client RNG ≠ on-chain RNG
-
----
-
-## Related
-
-- `wax-neftyblocks-RAM-sweeper`
-- `wax-seizure-safe-pack-opening-canvas`
-- `wax-screen-reader-accessible-inventory`
 
 ## License
 
-MIT — **Pixel Journey**
+MIT — Pixel Journey
