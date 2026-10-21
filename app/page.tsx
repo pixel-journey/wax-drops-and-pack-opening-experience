@@ -1,33 +1,33 @@
 'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { ClaimUnboxedPanel } from '../examples/ClaimUnboxedPanel';
-import { ProbabilityBreakdown } from '../examples/ProbabilityBreakdown';
-import { RecoveryClaimPanel } from '../examples/RecoveryClaimPanel';
-import { RevealAnimation } from '../examples/RevealAnimation';
-import { UnboxTransferPanel } from '../examples/UnboxTransferPanel';
+import { ClaimUnboxedPanel } from '../src/ClaimUnboxedPanel';
+import { ProbabilityBreakdown } from '../src/ProbabilityBreakdown';
+import { RecoveryClaimPanel } from '../src/RecoveryClaimPanel';
+import { RevealAnimation } from '../src/RevealAnimation';
+import { UnboxTransferPanel } from '../src/UnboxTransferPanel';
 import {
   demoOdds,
   formatChancePct,
   normalizeOdds,
   rollFromOdds,
-} from '../examples/engines';
+} from '../src/engines';
 import {
   SMOKE_PACK_ASSET_ID,
   SMOKE_PENDING_UNBOX_ID,
   fetchOwnerPacks,
   fetchPackSummary,
   type PackAssetSummary,
-} from '../examples/live/atomicassets';
+} from '../src/live/atomicassets';
 import {
   fetchUnboxProgress,
   type UnboxProgress,
-} from '../examples/live/atomicpacksx';
+} from '../src/live/atomicpacksx';
 import {
   PLATFORM_PRESETS,
   type PlatformClaimPreset,
-} from '../examples/platformPresets';
-import type { SessionLike } from '../examples/wharf/types';
+} from '../src/platformPresets';
+import type { SessionLike } from '../src/wharf/types';
 
 type Mode = 'demo' | 'live';
 

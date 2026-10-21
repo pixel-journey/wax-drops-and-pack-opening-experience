@@ -1,3 +1,4 @@
+import { Cases } from "../src/Cases";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body style={{ margin: 0, background: "#0a0a0a", color: "#fff" }}>
         {children}
+        <Cases />
       </body>
     </html>
   );

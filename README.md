@@ -20,15 +20,15 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 
 | Piece | Role |
 | --- | --- |
-| `examples/engines.ts` | Probability, stack detect, unbox progress helpers |
-| `examples/engines.test.ts` | Unit coverage for the pure pieces |
-| `examples/wharf/unboxTransfer.ts` + test | `atomicassets::transfer` with memo `unbox` builder |
-| `examples/wharf/claimUnboxed.ts` + test | `atomicpacksx::claimunboxed` builder |
-| `examples/wharf/sessionFactory.ts` | Dry-run session (no peers required) |
-| `examples/UnboxTransferPanel.tsx` | Step 1 UI |
-| `examples/ClaimUnboxedPanel.tsx` | Claim UI after poll |
-| `examples/ProbabilityBreakdown.tsx` | Odds display |
-| `examples/stackDetect.ts` | Which platform stack a pack appears to use |
+| `src/engines.ts` | Probability, stack detect, unbox progress helpers |
+| `src/engines.test.ts` | Unit coverage for the pure pieces |
+| `src/wharf/unboxTransfer.ts` + test | `atomicassets::transfer` with memo `unbox` builder |
+| `src/wharf/claimUnboxed.ts` + test | `atomicpacksx::claimunboxed` builder |
+| `src/wharf/sessionFactory.ts` | Dry-run session (no peers required) |
+| `src/UnboxTransferPanel.tsx` | Step 1 UI |
+| `src/ClaimUnboxedPanel.tsx` | Claim UI after poll |
+| `src/ProbabilityBreakdown.tsx` | Odds display |
+| `src/stackDetect.ts` | Which platform stack a pack appears to use |
 | `PLATFORM-CONTRACTS.md` | Trust labels + side-by-side flows |
 | `ARCHITECTURE.md` | Data flow, a11y, error, performance notes |
 | `app/` | Next.js demo with live-tools steps |
@@ -52,9 +52,9 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 ```
 
 ```ts
-import { unboxTransferWithSession } from "./examples/wharf/unboxTransfer";
-import { claimUnboxedWithSession } from "./examples/wharf/claimUnboxed";
-import { createDryRunSession } from "./examples/wharf/sessionFactory";
+import { unboxTransferWithSession } from "./src/wharf/unboxTransfer";
+import { claimUnboxedWithSession } from "./src/wharf/claimUnboxed";
+import { createDryRunSession } from "./src/wharf/sessionFactory";
 
 const session = createDryRunSession("alice.wam");
 await unboxTransferWithSession(session, { assetIds: ["1100003553120"] });
@@ -129,3 +129,9 @@ npm run dev
 ```
 
 MIT — Pixel Journey
+
+## Queries and unsigned transactions
+
+`src/api.ts` builds the HTTP requests. `src/usecases.ts` is the worked case: those requests, and an unsigned transaction when this repo already has an action or the chain action is the standard Antelope one for the topic. `executed` is false. Nothing is sent.
+
+The code used to sit in `examples/`. GitHub treats that directory as documentation, so the language bar hid the TypeScript.

@@ -9,7 +9,7 @@ interface ClaimOptions {
   params: ClaimUnboxedParams;
   updateUI?: (claimed: boolean) => void;
   onError?: (error: unknown) => void;
-  onSuccess?: (result: { transactionId?: string; raw: unknown }) => void;
+  onSuccess?: (result: { transactionId?: string; raw?: unknown }) => void;
 }
 
 /**

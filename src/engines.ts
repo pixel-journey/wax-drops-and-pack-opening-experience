@@ -50,13 +50,12 @@ export function normalizeOdds(items: ProbabilityItem[]): NormalizedOdds {
 export function parseContentsOdds(text: string): ProbabilityItem[] {
   if (!text || typeof text !== "string") return [];
   const items: ProbabilityItem[] = [];
-  // Match: 65% Common | %1 Mythic | 1% Mythic
-  const re =
-    /(?:(\d+(?:\.\d+)?)\s*%\s*([A-Za-z][\w\s-]*)|%\s*(\d+(?:\.\d+)?)\s*([A-Za-z][\w\s-]*))/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    const pct = m[1] ?? m[3];
-    const name = (m[2] ?? m[4] ?? "").trim().replace(/[-–—]+$/, "").trim();
+  const re = /^(?:(\d+(?:\.\d+)?)\s*%\s*(.+)|%\s*(\d+(?:\.\d+)?)\s*(.+))$/;
+  for (const chunk of text.split(/\s+[-–—]\s+/)) {
+    const match = re.exec(chunk.trim());
+    if (!match) continue;
+    const pct = match[1] ?? match[3];
+    const name = (match[2] ?? match[4] ?? "").trim();
     if (!pct || !name) continue;
     const chance = Number(pct) / 100;
     if (!Number.isFinite(chance)) continue;

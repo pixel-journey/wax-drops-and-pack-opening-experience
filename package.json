@@ -9,26 +9,35 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "framer-motion": "^14.5.0",
     "next": "15",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/react": "^18",
     "@types/node": "^20",
+    "@types/react": "^18",
+    "typescript": "^5",
     "vitest": "^2"
   },
   "peerDependencies": {
     "@wharfkit/session": ">=1.0.0",
-    "@wharfkit/web-renderer": ">=1.0.0",
     "@wharfkit/wallet-plugin-anchor": ">=1.0.0",
-    "@wharfkit/wallet-plugin-cloudwallet": ">=1.0.0"
+    "@wharfkit/wallet-plugin-cloudwallet": ">=1.0.0",
+    "@wharfkit/web-renderer": ">=1.0.0"
   },
   "peerDependenciesMeta": {
-    "@wharfkit/session": { "optional": true },
-    "@wharfkit/web-renderer": { "optional": true },
-    "@wharfkit/wallet-plugin-anchor": { "optional": true },
-    "@wharfkit/wallet-plugin-cloudwallet": { "optional": true }
+    "@wharfkit/session": {
+      "optional": true
+    },
+    "@wharfkit/web-renderer": {
+      "optional": true
+    },
+    "@wharfkit/wallet-plugin-anchor": {
+      "optional": true
+    },
+    "@wharfkit/wallet-plugin-cloudwallet": {
+      "optional": true
+    }
   }
 }
