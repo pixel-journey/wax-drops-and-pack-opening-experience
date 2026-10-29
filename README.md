@@ -3,7 +3,8 @@
 **Trust label:** `educational-reference`  
 **Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
 **Verification:** [VERIFICATION-LOG.md](VERIFICATION-LOG.md)  
-**Platform details:** [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md)
+**Platform details:** [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md)  
+**Action recipes:** [ACTION-RECIPES.md](ACTION-RECIPES.md)
 
 A pack opening screen that hides the contract, the memo, and the claim step is a recovery problem waiting to happen. This repo shows the Atomic open path in the open, labels other platforms as recovery-only, and keeps the probability and progress logic testable without a wallet.
 
@@ -11,9 +12,10 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 
 ## What you can learn
 
-- Why the open path is two actions, not one button: transfer with memo, then claim after RNG settles.
+- Why the open path is two (or more) actions, not one button: transfer with memo, then claim after RNG settles.
 - How Atomic, Nefty-class, and NFTHive-class claim shapes differ (action names and field lists are not interchangeable).
 - Why a website dying does not delete the tables — and what a recovery UI must still show.
+- How to detect which stack a pack uses from transfer history and ABI, not from the marketplace brand on the image.
 - How to keep probability display, stack detection, and progress polling pure enough to unit-test.
 
 ## What is actually in the repo
@@ -29,7 +31,9 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 | `src/ClaimUnboxedPanel.tsx` | Claim UI after poll |
 | `src/ProbabilityBreakdown.tsx` | Odds display |
 | `src/stackDetect.ts` | Which platform stack a pack appears to use |
+| `src/api.ts` / `src/usecases.ts` | HTTP request builders and unsigned transaction cases |
 | `PLATFORM-CONTRACTS.md` | Trust labels + side-by-side flows |
+| `ACTION-RECIPES.md` | Copy-pastable forward and recovery recipes |
 | `ARCHITECTURE.md` | Data flow, a11y, error, performance notes |
 | `app/` | Next.js demo with live-tools steps |
 
@@ -67,6 +71,8 @@ await claimUnboxedWithSession(session, {
 
 UI sequence in the demo: **UnboxTransferPanel** → poll → **ClaimUnboxedPanel**.
 
+Atomic drops (`atomicdropsx::claimdrop`) follow a separate claim shape with payment transfer rules — see ACTION-RECIPES.md. Always read the live drop row.
+
 ## Platform trust (read this before new deposits)
 
 | Family | Pack contract | Trust for new value | Notes |
@@ -75,12 +81,40 @@ UI sequence in the demo: **UnboxTransferPanel** → poll → **ClaimUnboxedPanel
 | Nefty-class | `neftyblocksp` | `recovery` / `avoid-new-value` | Claim action is `claim` (not `claimunboxed`); field names differ |
 | NFTHive-class | `nfthivepacks` | `recovery` / `avoid-new-value` | Often single-id `claimunpack`; verify tables |
 
-Full side-by-side, ABI notes, and recovery recipes: [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md).  
+Full side-by-side, ABI notes, and recovery recipes: [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md) and [ACTION-RECIPES.md](ACTION-RECIPES.md).  
 Related catalog note: `ECOSYSTEM-RESILIENCE.md`.
 
 **Do** prefer Atomic (or a contract you control with a published ABI) for new launches.  
 **Do not** treat a marketplace brand on the image as proof of the underlying pack contract.  
 **Do not** transfer a pack to `atomicpacksx` without the `unbox` memo and without understanding the later claim step.
+
+### Side-by-side pack open + claim
+
+| Step | Atomic `atomicpacksx` | Nefty `neftyblocksp` | NFTHive `nfthivepacks` |
+| --- | --- | --- | --- |
+| Start unbox | `atomicassets::transfer` → `atomicpacksx`, memo **`unbox`** | `transfer` → `neftyblocksp`, memo **`unbox`** | Verify transfer target + memo from **this pack’s** history |
+| RNG | `orng.wax` | `orng.wax` (observed) | Platform-specific; verify |
+| Claim action | **`claimunboxed`** | **`claim`** | **`claimunpack`** |
+| Claim keys | `pack_asset_id`, `origin_roll_ids[]` | `claim_id`, `roll_indexes[]` | `pack_asset_id` |
+| Progress | `unboxassets` / `unboxpacks` | Nefty tables (verify ABI) | Hive tables (verify ABI) |
+| New deposits | OK if you accept Atomic shared contract risk | **Avoid** | **Avoid** |
+
+### How to detect which stack a pack uses
+
+1. Read pack NFT **transfer history** (who received `unbox` / unpack memos).
+2. Check collection **`authorized_accounts` / notify_accounts`** (may list `atomicpacksx`, `neftyblocksp`, `nfthivepacks`, etc.).
+3. Open explorer account → ABI → match claim action names above.
+4. Never guess the claim action from the marketplace brand on the image alone — packs can be Atomic under the hood even if sold on a third-party UI.
+
+## Architecture principles (from ARCHITECTURE.md)
+
+- **Transparency first**: Users should always understand probabilities and what is happening.
+- **Safety**: All on-chain actions must be clearly previewed via WharfKit.
+- **Accessibility**: Respect `prefers-reduced-motion`; provide ARIA live regions and keyboard paths.
+- **Reusability**: Pure helpers in `src/` so they can be copied without the demo shell.
+- **Educational value**: Code and docs should teach good patterns rather than hide them.
+
+High-level flow: UI → pure reveal/probability engines → WharfKit session → public endpoints (Hyperion / Atomic API) → reconciliation with clear rollback on failure.
 
 ## Edge cases
 
@@ -89,16 +123,20 @@ Related catalog note: `ECOSYSTEM-RESILIENCE.md`.
 - A pack can sit mid-unbox if the claim step is never finished. The tables remain the source of truth.
 - Dry-run session succeeds without network peers; a real session requires a wallet and the correct authority.
 - Probability display is client-side. It does not change what the contract rolls.
+- NFTHive claim is often a single `pack_asset_id`; do not assume the Atomic `origin_roll_ids` vector.
+- Insufficient RAM or other resource errors surface as clear, actionable messages rather than raw RPC noise.
 
 ## Best practice and the opposite
 
 **Do** show the contract, action, and key fields before the sign button.  
-**Do** label recovery-only platforms clearly in the UI.  
-**Do** keep the progress and odds helpers pure so they can be tested without Hyperion.
+**Do** label recovery-only platforms clearly in the UI with a trust banner.  
+**Do** keep the progress and odds helpers pure so they can be tested without Hyperion.  
+**Do** re-verify ABI and authorities on an explorer immediately before signing.
 
 **Do not** call a client animation “the open” when the claim action has not yet been sent.  
-**Do not** hide the two-step nature behind a single “Open Pack” button that only does the transfer.  
-**Do not** recommend new high-value deposits into platforms whose product UI has already gone dark.
+**Do not** hide the multi-step nature behind a single “Open Pack” button that only does the transfer.  
+**Do not** recommend new high-value deposits into platforms whose product UI has already gone dark.  
+**Do not** auto-broadcast without an explicit confirm dialog that lists the contract + action + ids.
 
 ## Antelope notes
 
@@ -113,6 +151,8 @@ user pack NFT
     → atomicpacksx::claimunboxed              [builder tested]
     → optional live wallet broadcast          [untested in CI]
 ```
+
+See VERIFICATION-LOG.md for the full claim-to-evidence map.
 
 ## Related
 
