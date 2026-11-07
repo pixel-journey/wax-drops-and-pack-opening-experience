@@ -154,6 +154,14 @@ user pack NFT
 
 See VERIFICATION-LOG.md for the full claim-to-evidence map.
 
+## AtomicAssets v2 — unbox is a transfer, not backing
+
+`buildUnboxTransferAction` returns `atomicassets::transfer` to `atomicpacksx` with memo `unbox`. It does not call `backasset` and it does not set `tokens_to_back`. Native backing is deprecated. A pack is not a token-backed NFT.
+
+The builder rejects an empty id list and a memo other than `unbox` when the destination is `atomicpacksx`. It still accepts more than one id if the caller passes them. The unit test uses one id (`1100003553120`) and a fake session. This pass did not re-run `npm test` and did not open a pack.
+
+AtomicMarket v2 sales are also one asset. That rule is not enforced here. This file is the pack open, not the sale.
+
 ## Related
 
 - [wax-pity-system-and-guaranteed-rewards](https://github.com/pixel-journey/wax-pity-system-and-guaranteed-rewards) — arithmetic for rates and guarantees, separate from the open UX
