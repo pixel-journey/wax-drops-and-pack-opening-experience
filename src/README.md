@@ -1,6 +1,8 @@
 # Examples
 
-This folder contains production-ready, reusable component examples for building drop and pack opening experiences on WAX.
+UI sketches for a drop and pack-opening screen. They are not a broadcast and not a claim on chain.
+
+The tested pieces are the parent `src/engines.ts`, `src/wharf/unboxTransfer.ts`, and `src/wharf/claimUnboxed.ts`. Read the repo [README](../README.md) before copying a component. `ClaimFlow.tsx` does not submit a transaction by itself.
 
 ## Shared Types
 
@@ -12,7 +14,7 @@ See `types.ts` for common interfaces used across the examples (`DropResult`, `Pr
 |-------------------------|--------------------------------------------------|---------------------------------------|
 | `RevealAnimation.tsx`   | Smooth animated reveal with accessibility support | Core reveal moment                    |
 | `ProbabilityBreakdown.tsx` | Clean visual + textual probability display    | Showing odds transparently            |
-| `ClaimFlow.tsx`         | Optimistic claiming with error handling & rollback | On-chain claiming logic               |
+| `ClaimFlow.tsx`         | Sketch of a claim step with a rollback story     | Not a broadcast. Wire it yourself.    |
 | `useDropOpening.ts`     | Custom hook managing the full flow               | State management in React components  |
 | `ErrorBoundary.tsx`     | Reusable error boundary with good UX             | Production error handling             |
 | `demo.tsx`              | Full composition example                         | Understanding how everything works together |
