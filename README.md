@@ -4,7 +4,8 @@
 **Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
 **Verification:** [VERIFICATION-LOG.md](VERIFICATION-LOG.md)  
 **Platform details:** [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md)  
-**Action recipes:** [ACTION-RECIPES.md](ACTION-RECIPES.md)
+**Action recipes:** [ACTION-RECIPES.md](ACTION-RECIPES.md)  
+**Source-backed walkthrough:** [EDUCATION.md](EDUCATION.md)
 
 A pack opening screen that hides the contract, the memo, and the claim step is a recovery problem waiting to happen. This repo shows the Atomic open path in the open, labels other platforms as recovery-only, and keeps the probability and progress logic testable without a wallet.
 
@@ -13,10 +14,11 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 ## What you can learn
 
 - Why the open path is two (or more) actions, not one button: transfer with memo, then claim after RNG settles.
+- The exact refusal strings the AtomicPacks contract emits (single pack, memo `unbox`, unlock time, missing rows, empty claim vector, template -1 skip).
 - How Atomic, Nefty-class, and NFTHive-class claim shapes differ (action names and field lists are not interchangeable).
 - Why a website dying does not delete the tables — and what a recovery UI must still show.
 - How to detect which stack a pack uses from transfer history and ABI, not from the marketplace brand on the image.
-- How to keep probability display, stack detection, and progress polling pure enough to unit-test.
+- How to keep probability display, stack detection, progress polling, and contract previews pure enough to unit-test.
 
 ## What is actually in the repo
 
@@ -26,6 +28,8 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 | `src/engines.test.ts` | Unit coverage for the pure pieces |
 | `src/wharf/unboxTransfer.ts` + test | `atomicassets::transfer` with memo `unbox` builder |
 | `src/wharf/claimUnboxed.ts` + test | `atomicpacksx::claimunboxed` builder |
+| `src/wharf/previewUnbox.ts` + test | Pure preview of transfer refusals (exact strings from unboxing.cpp) |
+| `src/wharf/previewClaimUnboxed.ts` + test | Pure preview of claimunboxed refusals + template -1 skip |
 | `src/wharf/sessionFactory.ts` | Dry-run session (no peers required) |
 | `src/UnboxTransferPanel.tsx` | Step 1 UI |
 | `src/ClaimUnboxedPanel.tsx` | Claim UI after poll |
@@ -34,6 +38,7 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 | `src/api.ts` / `src/usecases.ts` | HTTP request builders and unsigned transaction cases |
 | `PLATFORM-CONTRACTS.md` | Trust labels + side-by-side flows |
 | `ACTION-RECIPES.md` | Copy-pastable forward and recovery recipes |
+| `EDUCATION.md` | Predict-run tables, attack table, official source links |
 | `ARCHITECTURE.md` | Data flow, a11y, error, performance notes |
 | `app/` | Next.js demo with live-tools steps |
 
@@ -44,7 +49,7 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 ```
 1) atomicassets::transfer → atomicpacksx
    memo: "unbox"
-   asset_ids: [pack_asset_id]
+   asset_ids: [pack_asset_id]   // exactly one
 
 2) Poll atomicpacksx tables
    unboxpacks / unboxassets (scope = pack asset id)
@@ -58,9 +63,15 @@ Nothing here mints a pack or opens one on mainnet in CI. Live broadcast remains 
 ```ts
 import { unboxTransferWithSession } from "./src/wharf/unboxTransfer";
 import { claimUnboxedWithSession } from "./src/wharf/claimUnboxed";
+import { previewUnbox } from "./src/wharf/previewUnbox";
+import { previewClaimUnboxed } from "./src/wharf/previewClaimUnboxed";
 import { createDryRunSession } from "./src/wharf/sessionFactory";
 
 const session = createDryRunSession("alice.wam");
+
+// Pure preview (no wallet)
+previewUnbox({ to: "atomicpacksx", assetIds: ["1100003553120"], memo: "unbox", unlocked: true });
+
 await unboxTransferWithSession(session, { assetIds: ["1100003553120"] });
 // …poll unboxassets…
 await claimUnboxedWithSession(session, {
@@ -82,6 +93,7 @@ Atomic drops (`atomicdropsx::claimdrop`) follow a separate claim shape with paym
 | NFTHive-class | `nfthivepacks` | `recovery` / `avoid-new-value` | Often single-id `claimunpack`; verify tables |
 
 Full side-by-side, ABI notes, and recovery recipes: [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md) and [ACTION-RECIPES.md](ACTION-RECIPES.md).  
+Source-backed refusal strings and predict-run tables: [EDUCATION.md](EDUCATION.md).  
 Related catalog note: `ECOSYSTEM-RESILIENCE.md`.
 
 **Do** prefer Atomic (or a contract you control with a published ABI) for new launches.  
@@ -125,13 +137,15 @@ High-level flow: UI → pure reveal/probability engines → WharfKit session →
 - Probability display is client-side. It does not change what the contract rolls.
 - NFTHive claim is often a single `pack_asset_id`; do not assume the Atomic `origin_roll_ids` vector.
 - Insufficient RAM or other resource errors surface as clear, actionable messages rather than raw RPC noise.
+- Template id `-1` in a roll outcome means no NFT is minted for that roll (row is erased only).
 
 ## Best practice and the opposite
 
 **Do** show the contract, action, and key fields before the sign button.  
 **Do** label recovery-only platforms clearly in the UI with a trust banner.  
 **Do** keep the progress and odds helpers pure so they can be tested without Hyperion.  
-**Do** re-verify ABI and authorities on an explorer immediately before signing.
+**Do** re-verify ABI and authorities on an explorer immediately before signing.  
+**Do** use the pure previews (`previewUnbox`, `previewClaimUnboxed`) to surface exact refusal strings before building the action.
 
 **Do not** call a client animation “the open” when the claim action has not yet been sent.  
 **Do not** hide the multi-step nature behind a single “Open Pack” button that only does the transfer.  
@@ -158,7 +172,7 @@ See VERIFICATION-LOG.md for the full claim-to-evidence map.
 
 `buildUnboxTransferAction` returns `atomicassets::transfer` to `atomicpacksx` with memo `unbox`. It does not call `backasset` and it does not set `tokens_to_back`. Native backing is deprecated. A pack is not a token-backed NFT.
 
-The builder rejects an empty id list and a memo other than `unbox` when the destination is `atomicpacksx`. It still accepts more than one id if the caller passes them. The unit test uses one id (`1100003553120`) and a fake session. This pass did not re-run `npm test` and did not open a pack.
+The builder rejects an empty id list and a memo other than `unbox` when the destination is `atomicpacksx`. The pure preview additionally refuses more than one id with the exact contract string. The unit test uses one id (`1100003553120`) and a fake session. This pass did not re-run `npm test` and did not open a pack.
 
 AtomicMarket v2 sales are also one asset. That rule is not enforced here. This file is the pack open, not the sale.
 
@@ -167,6 +181,7 @@ AtomicMarket v2 sales are also one asset. That rule is not enforced here. This f
 - [wax-pity-system-and-guaranteed-rewards](https://github.com/pixel-journey/wax-pity-system-and-guaranteed-rewards) — arithmetic for rates and guarantees, separate from the open UX
 - [wax-neftyblocks-RAM-sweeper](https://github.com/pixel-journey/wax-neftyblocks-RAM-sweeper) — recovery helper for certain Nefty balances
 - Catalog `ECOSYSTEM-RESILIENCE.md` — frontend abandonment patterns
+- Official: [pinknetworkx/atomicpacks-contract](https://github.com/pinknetworkx/atomicpacks-contract) and [docs.wax.io](https://docs.wax.io/build/tutorials/howto_atomicassets)
 
 ## Run
 
