@@ -70,7 +70,8 @@ Use `previewClaimUnboxed` in `src/wharf/previewClaimUnboxed.ts`.
 
 - This repo's builders: `src/wharf/unboxTransfer.ts`, `src/wharf/claimUnboxed.ts`
 - Platform comparison: [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md)
-- Pity / rate math (separate concern): [wax-pity-system-and-guaranteed-rewards](https://github.com/pixel-journey/wax-pity-system-and-guaranteed-rewards)
+- Pity / rate math (designer arithmetic, separate from the open path): [wax-pity-system-and-guaranteed-rewards](https://github.com/pixel-journey/wax-pity-system-and-guaranteed-rewards) (see its [EDUCATION.md](https://github.com/pixel-journey/wax-pity-system-and-guaranteed-rewards/blob/main/EDUCATION.md))
+- Template supply rules that affect whether a claim mints (max_supply, lock, delete): [wax-atomic-template-and-schema-explorer](https://github.com/pixel-journey/wax-atomic-template-and-schema-explorer)
 - Mutable data / schema (what the minted NFTs look like): related AtomicAssets labs in the catalog
 
 ## What this lab does not do
@@ -79,5 +80,6 @@ Use `previewClaimUnboxed` in `src/wharf/previewClaimUnboxed.ts`.
 - It does not broadcast.
 - It does not claim to be a replacement for reading the live ABI on an explorer.
 - It does not invent AtomicDrops (`atomicdropsx`) rules; those live in ACTION-RECIPES.md and still require reading the specific drop row.
+- It does not implement soft or hard pity; that arithmetic lives in the pity lab.
 
 Always re-verify the live ABI before any production sign.
