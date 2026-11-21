@@ -4,7 +4,7 @@ import { USE_CASES, assertUseCases } from "./usecases";
 describe("use cases", () => {
   it("keeps requests unsent and actions free of a signatures field", () => {
     assertUseCases();
-    expect(USE_CASES.length).toBeGreaterThanOrEqual(2);
+    expect(USE_CASES.length).toBe(2);
     for (const item of USE_CASES) {
       expect(item.request.executed).toBe(false);
       expect(item.request.url.startsWith("https://")).toBe(true);

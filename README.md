@@ -1,7 +1,7 @@
 # Drops and pack opening without pretending the website is the source of truth
 
 **Trust label:** `educational-reference`  
-**Catalog:** [wax-ecosystem-blueprint-catalog](https://github.com/pixel-journey/wax-ecosystem-blueprint-catalog)  
+**Catalog:** `wax-ecosystem-blueprint-catalog` (private index; not this public course)  
 **Verification:** [VERIFICATION-LOG.md](VERIFICATION-LOG.md)  
 **Platform details:** [PLATFORM-CONTRACTS.md](PLATFORM-CONTRACTS.md)  
 **Action recipes:** [ACTION-RECIPES.md](ACTION-RECIPES.md)  
